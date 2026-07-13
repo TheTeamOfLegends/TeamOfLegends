@@ -11,6 +11,9 @@ export const Header = () => {
           <Link to="/friends">Страница со списком друзей</Link>
         </li>
         <li>
+          <Link to="/withError">Страница с вызовом ошибки</Link>
+        </li>
+        <li>
           <Link to="/404">404</Link>
         </li>
       </ul>

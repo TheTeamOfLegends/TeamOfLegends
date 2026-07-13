@@ -3,6 +3,8 @@ import { AppDispatch, RootState } from './store'
 import { initMainPage, MainPage } from './pages/Main'
 import { initFriendsPage, FriendsPage } from './pages/FriendsPage'
 import { initNotFoundPage, NotFoundPage } from './pages/NotFound'
+import { WithErrorPage } from './pages/WithError'
+import { RouteError } from './components/Error/RouteError'
 
 export type PageInitContext = {
   clientToken?: string
@@ -17,13 +19,23 @@ export type PageInitArgs = {
 export const routes = [
   {
     path: '/',
-    Component: MainPage,
-    fetchData: initMainPage,
-  },
-  {
-    path: '/friends',
-    Component: FriendsPage,
-    fetchData: initFriendsPage,
+    errorElement: <RouteError />,
+    children: [
+      {
+        index: true,
+        Component: MainPage,
+        fetchData: initMainPage,
+      },
+      {
+        path: 'friends',
+        Component: FriendsPage,
+        fetchData: initFriendsPage,
+      },
+      {
+        path: 'withError',
+        Component: WithErrorPage,
+      },
+    ],
   },
   {
     path: '*',

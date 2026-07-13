@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# TypeScript server build artifacts
+server/*.js
+server/*.d.ts
+tsconfig.server.tsbuildinfo
