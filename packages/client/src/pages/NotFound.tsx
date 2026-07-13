@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet'
 
-import { Header } from '../components/Header'
+import { Header } from '../components/Header/Header'
 import { usePage } from '../hooks/usePage'
 
 export const NotFoundPage = () => {
@@ -11,7 +11,7 @@ export const NotFoundPage = () => {
       <Helmet>
         <meta charSet="utf-8" />
         <title>404</title>
-        <meta name="description" content="Страница не найдена"/>
+        <meta name="description" content="Страница не найдена" />
       </Helmet>
       <Header />
       Страница не найдена!
