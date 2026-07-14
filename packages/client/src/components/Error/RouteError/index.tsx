@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, useRouteError } from 'react-router-dom'
+import { useNavigate, useRouteError } from 'react-router-dom'
 import { useEffect } from 'react'
 import styled from 'styled-components'
 
@@ -6,7 +6,7 @@ const RouteErrorWrapper = styled.div`
   --gap: 12px;
 
   position: fixed;
-  inset: 0 0;
+  inset: 0;
   background-color: #282828;
 
   .route-error {
@@ -31,29 +31,33 @@ const RouteErrorWrapper = styled.div`
     border-radius: 4px;
     cursor: pointer;
     padding: 4px 8px;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #cbcbcb;
+    }
   }
 `
 
 export const RouteError = () => {
   const error = useRouteError()
   const navigate = useNavigate()
-  const location = useLocation()
 
   useEffect(() => {
     console.error('В приложении произошла ошибка:', error)
-  }, [error])
+  }, [])
 
   return (
     <RouteErrorWrapper>
       <div className="route-error">
         <div>Что-то пошло не так</div>
         <div className="route-error-navigation">
-          <button
-            type="button"
-            onClick={() => navigate(location.pathname, { replace: true })}>
+          <button type="button" onClick={() => window.location.reload()}>
             Обновить
           </button>
-          <button type="button" onClick={() => navigate('/')}>
+          <button
+            type="button"
+            onClick={() => navigate('/', { replace: true })}>
             На главную
           </button>
         </div>
