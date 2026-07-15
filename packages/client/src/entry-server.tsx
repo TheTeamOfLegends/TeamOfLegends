@@ -15,7 +15,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import {
   createContext,
   createFetchRequest,
-  createUrl
+  createUrl,
 } from './entry-server.utils'
 import { reducer } from './store'
 import { routes } from './routes'
@@ -42,16 +42,25 @@ export const render = async (req: ExpressRequest) => {
     throw new Error('Страница не найдена!')
   }
 
-  const [{route: { fetchData }}] = foundRoutes
+  // Берем ПОСЛЕДНИЙ элемент массива
+  // (это самый конкретный маршрут, например, /forum или /sign-in, а не '/')
+  const lastMatch = foundRoutes[foundRoutes.length - 1]
 
-  try {
-    await fetchData({
-      dispatch: store.dispatch,
-      state: store.getState(),
-      ctx: createContext(req),
-    })
-  } catch (e) {
-    console.log('Инициализация страницы произошла с ошибкой', e)
+  // Достаем fetchData
+  const fetchData =
+    'fetchData' in lastMatch.route ? lastMatch.route.fetchData : null
+
+  // Вызываем только если это действительно функция
+  if (typeof fetchData === 'function') {
+    try {
+      await fetchData({
+        dispatch: store.dispatch,
+        state: store.getState(),
+        ctx: createContext(req),
+      })
+    } catch (e) {
+      console.log('Инициализация страницы произошла с ошибкой', e)
+    }
   }
 
   store.dispatch(setPageHasBeenInitializedOnServer(true))
@@ -59,14 +68,16 @@ export const render = async (req: ExpressRequest) => {
   const router = createStaticRouter(dataRoutes, context)
   const sheet = new ServerStyleSheet()
   try {
-    const html = ReactDOM.renderToString(sheet.collectStyles(
-      <Provider store={store}>
-        <StaticRouterProvider router={router} context={context} />
-      </Provider>
-    ));
-    const styleTags = sheet.getStyleTags();
+    const html = ReactDOM.renderToString(
+      sheet.collectStyles(
+        <Provider store={store}>
+          <StaticRouterProvider router={router} context={context} />
+        </Provider>
+      )
+    )
+    const styleTags = sheet.getStyleTags()
 
-    const helmet = Helmet.renderStatic();
+    const helmet = Helmet.renderStatic()
 
     return {
       html,

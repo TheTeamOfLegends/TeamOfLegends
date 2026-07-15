@@ -4,15 +4,15 @@ import {
   setPageHasBeenInitializedOnServer,
   selectPageHasBeenInitializedOnServer,
 } from '../slices/ssrSlice'
-import { PageInitArgs, PageInitContext } from '../routes'
+import { PageInitArgs, PageInitContext } from '../types'
 
 const getCookie = (name: string) => {
   const matches = document.cookie.match(
     new RegExp(
       '(?:^|; )' +
-      // eslint-disable-next-line
-      name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') +
-      '=([^;]*)'
+        // eslint-disable-next-line
+        name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') +
+        '=([^;]*)'
     )
   )
   return matches ? decodeURIComponent(matches[1]) : undefined
@@ -38,6 +38,7 @@ export const usePage = ({ initPage }: PageProps) => {
       dispatch(setPageHasBeenInitializedOnServer(false))
       return
     }
+
     initPage({ dispatch, state: store.getState(), ctx: createContext() })
   }, [])
 }

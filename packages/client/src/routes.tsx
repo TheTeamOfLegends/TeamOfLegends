@@ -1,5 +1,3 @@
-import { AppDispatch, RootState } from './store'
-
 import {
   ChakraProvider,
   createSystem,
@@ -12,6 +10,7 @@ import { AppSpinner } from './components/ui/loader/app-spinner'
 import { Toaster } from './components/ui/toaster'
 import { API_BASE_URL } from './constants'
 import { FriendsPage, initFriendsPage } from './pages/FriendsPage'
+import { ForumPage, initForumPage } from './pages/ForumPage'
 import { initMainPage, MainPage } from './pages/Main'
 import { initNotFoundPage, NotFoundPage } from './pages/NotFound'
 import { SignInPage } from './pages/SignInPage/SignInPage'
@@ -29,16 +28,6 @@ const RootLayout = () => {
       <Toaster />
     </ChakraProvider>
   )
-}
-
-export type PageInitContext = {
-  clientToken?: string
-}
-
-export type PageInitArgs = {
-  dispatch: AppDispatch
-  state: RootState
-  ctx: PageInitContext
 }
 
 export const GuestOnlyGuard = ({ children }: { children: React.ReactNode }) => {
@@ -90,6 +79,11 @@ export const routes = [
         path: '/friends',
         Component: FriendsPage,
         fetchData: initFriendsPage,
+      },
+      {
+        path: '/forum',
+        Component: ForumPage,
+        fetchData: initForumPage,
       },
       {
         path: '/sign-in',
