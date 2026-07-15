@@ -15,6 +15,8 @@ import { API_BASE_URL } from './constants'
 import { FriendsPage, initFriendsPage } from './pages/FriendsPage'
 import { MainPage } from './pages/Main'
 import { initNotFoundPage, NotFoundPage } from './pages/NotFound'
+import { WithErrorPage } from './pages/WithError'
+import { RouteError } from './components/Error/RouteError/RouteError'
 import { SignInPage } from './pages/SignInPage/SignInPage'
 
 const config = defineConfig({
@@ -82,6 +84,11 @@ export const routes = [
   {
     path: '/',
     element: <RootLayout />,
+    errorElement: (
+      <ChakraProvider value={system}>
+        <RouteError />
+      </ChakraProvider>
+    ),
     children: [
       {
         path: '/',
@@ -99,6 +106,10 @@ export const routes = [
             <SignInPage />
           </GuestOnlyGuard>
         ),
+      },
+      {
+        path: '/withError',
+        Component: WithErrorPage,
       },
       {
         path: '*',
