@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Helmet } from 'react-helmet'
-import { Header } from '../components/Header'
-import styled from 'styled-components'
+import { Header } from '../components/Header/Header'
+import { Button } from '@chakra-ui/react'
 
 export const WithErrorPage = () => {
   const [isError, setIsError] = useState(false)
@@ -22,9 +22,9 @@ export const WithErrorPage = () => {
       </Helmet>
       <Header />
       <div>
-        <button type="button" onClick={() => setIsError(true)}>
+        <Button type="button" m={'30px'} onClick={() => setIsError(true)}>
           Получить ошибку
-        </button>
+        </Button>
       </div>
     </>
   )
