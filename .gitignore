@@ -6,3 +6,4 @@ dist
 tmp
 lerna-debug.log
 **/tsconfig.server.tsbuildinfo
+packages/client/server/**/*.js
