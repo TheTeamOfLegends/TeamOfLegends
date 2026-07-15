@@ -4,7 +4,6 @@ import { Link as RouterLink } from 'react-router-dom'
 type LogoProps = {
   size?: 'sm' | 'md' | 'lg'
   accentColor?: string
-  showLink?: boolean
   variant?: 'horizontal' | 'stacked'
   showIcon?: boolean
 } & StackProps
@@ -31,7 +30,6 @@ const sizes = {
 export const Logo = ({
   size = 'md',
   accentColor = '#FFFFFF',
-  showLink = true,
   variant = 'horizontal',
   showIcon = true,
   ...props
@@ -119,10 +117,6 @@ export const Logo = ({
       </Text>
     </HStack>
   )
-
-  if (!showLink) {
-    return content
-  }
 
   return (
     <ChakraLink asChild _hover={{ textDecoration: 'none' }}>
