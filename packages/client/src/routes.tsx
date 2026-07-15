@@ -4,6 +4,7 @@ import {
   defaultConfig,
   defineConfig,
 } from '@chakra-ui/react'
+import { GlobalStyles } from './theme/GlobalStyles'
 import { useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { AppSpinner } from './components/ui/loader/app-spinner'
@@ -11,7 +12,7 @@ import { Toaster } from './components/ui/toaster'
 import { API_BASE_URL } from './constants'
 import { FriendsPage, initFriendsPage } from './pages/FriendsPage'
 import { ForumPage, initForumPage } from './pages/ForumPage/ForumPage'
-import { initMainPage, MainPage } from './pages/Main'
+import { MainPage } from './pages/Main'
 import { initNotFoundPage, NotFoundPage } from './pages/NotFound'
 import { SignInPage } from './pages/SignInPage/SignInPage'
 
@@ -24,6 +25,7 @@ const system = createSystem(defaultConfig, config)
 const RootLayout = () => {
   return (
     <ChakraProvider value={system}>
+      <GlobalStyles />
       <Outlet />
       <Toaster />
     </ChakraProvider>
@@ -53,7 +55,7 @@ export const GuestOnlyGuard = ({ children }: { children: React.ReactNode }) => {
 
     isAutheticated().then(result => {
       if (result) {
-        navigate('/game')
+        navigate('/')
       }
     })
   }, [navigate])
@@ -73,7 +75,6 @@ export const routes = [
       {
         path: '/',
         Component: MainPage,
-        fetchData: initMainPage,
       },
       {
         path: '/friends',

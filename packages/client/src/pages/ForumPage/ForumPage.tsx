@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet'
 
 import { useSelector } from '../../store'
-import { Header } from '../../components/Header'
+import { Header } from '../../components/Header/Header'
 import { fetchForumThunk, selectForum } from '../../slices/forumSlice'
 import { PageInitArgs } from '../../types'
 import { usePage } from '../../hooks/usePage'

@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet'
 
 import { useSelector } from '../store'
-import { Header } from '../components/Header'
+import { Header } from '../components/Header/Header'
 import {
   fetchFriendsThunk,
   selectFriends,
