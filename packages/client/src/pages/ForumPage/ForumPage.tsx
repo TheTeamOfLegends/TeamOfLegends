@@ -34,7 +34,12 @@ export const ForumPage = () => {
 }
 
 export const initForumPage = async ({ dispatch, state }: PageInitArgs) => {
-  if (!selectForum(state)) {
-    return dispatch(fetchForumThunk())
+  const topics = selectForum(state)
+
+  // Если данные уже есть в сторе, не фетчим снова
+  if (topics) {
+    return
   }
+
+  return dispatch(fetchForumThunk())
 }
