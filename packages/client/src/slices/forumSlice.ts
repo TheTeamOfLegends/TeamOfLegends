@@ -2,8 +2,9 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { SERVER_HOST } from '../constants'
 import { User } from './userSlice'
+import { topicsMock } from '../pages/ForumPage/topicsMock'
 
-interface Topic {
+export interface Topic {
   id: number
   title: string
   author: User
@@ -50,6 +51,8 @@ export const forumSlice = createSlice({
         }
       )
       .addCase(fetchForumThunk.rejected.type, state => {
+        //TODO удалить mock данные после интеграции с API
+        state.topics = topicsMock
         state.isLoading = false
       })
   },

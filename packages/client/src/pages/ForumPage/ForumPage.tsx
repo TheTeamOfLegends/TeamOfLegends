@@ -1,10 +1,10 @@
 import { Helmet } from 'react-helmet'
 
-import { useSelector } from '../store'
-import { Header } from '../components/Header'
-import { fetchForumThunk, selectForum } from '../slices/forumSlice'
-import { PageInitArgs } from '../types'
-import { usePage } from '../hooks/usePage'
+import { useSelector } from '../../store'
+import { Header } from '../../components/Header'
+import { fetchForumThunk, selectForum } from '../../slices/forumSlice'
+import { PageInitArgs } from '../../types'
+import { usePage } from '../../hooks/usePage'
 
 export const ForumPage = () => {
   const topics = useSelector(selectForum) ?? []
