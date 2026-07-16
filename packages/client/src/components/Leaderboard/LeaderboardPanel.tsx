@@ -1,20 +1,15 @@
 import { Box, Heading } from '@chakra-ui/react'
-import { LeaderboardEntry } from '../../pages/LeaderboardPage/types'
+import { ReactNode } from 'react'
 import { panelStyles, titleStyles } from './LeaderboardPanel.styles'
-import { LeaderboardBanner } from '../Leaderboard/LeaderboardBanner'
-import { LeaderboardTable } from '../Leaderboard/LeaderboardTable'
-import { LeaderboardActions } from '../Leaderboard/LeaderboardActions'
 
 type Props = {
-  entries: LeaderboardEntry[]
-  currentUser?: LeaderboardEntry
+  title?: string
+  children: ReactNode
 }
 
-export const LeaderboardPanel = ({ entries, currentUser }: Props) => (
+export const LeaderboardPanel = ({ title = 'rating', children }: Props) => (
   <Box {...panelStyles}>
-    <Heading {...titleStyles}>rating</Heading>
-    {currentUser && <LeaderboardBanner entry={currentUser} />}
-    <LeaderboardTable entries={entries} />
-    <LeaderboardActions />
+    <Heading {...titleStyles}>{title}</Heading>
+    {children}
   </Box>
 )

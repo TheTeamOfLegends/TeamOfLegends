@@ -1,4 +1,4 @@
-import { LeaderboardEntry } from './types'
+import { LeaderboardEntry } from '../../components/Leaderboard/types'
 
 export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { place: 1, login: 'ace_pilot', score: 2_000_000 },

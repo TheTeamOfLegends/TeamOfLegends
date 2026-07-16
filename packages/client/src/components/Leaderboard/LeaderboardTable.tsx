@@ -1,12 +1,12 @@
 import { Box, Flex, VStack } from '@chakra-ui/react'
-import { LeaderboardEntry } from '../../pages/LeaderboardPage/types'
+import { LeaderboardEntry } from './types'
 import {
   tableWrapperStyles,
   tableScrollStyles,
   tableHeaderStyles,
   placeColStyles,
 } from './LeaderboardTable.styles'
-import { LeaderboardRow } from '../Leaderboard/LeaderboardRow'
+import { LeaderboardRow } from './LeaderboardRow'
 
 type Props = {
   entries: LeaderboardEntry[]

@@ -1,6 +1,6 @@
 import { Box, Flex, HStack, Text } from '@chakra-ui/react'
-import { LeaderboardEntry } from '../../pages/LeaderboardPage/types'
-import { formatScore } from '../../pages/LeaderboardPage/utils'
+import { LeaderboardEntry } from './types'
+import { formatScore } from './utils'
 import { getRowStyles, placeColStyles } from './LeaderboardRow.styles'
 import { PlayerAvatar } from './PlayerAvatar'
 

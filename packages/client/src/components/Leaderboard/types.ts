@@ -5,3 +5,8 @@ export type LeaderboardEntry = {
   avatarUrl?: string
   isCurrentUser?: boolean
 }
+
+export type LeaderboardAction = {
+  to: string
+  label: string
+}
