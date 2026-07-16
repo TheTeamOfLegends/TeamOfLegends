@@ -18,6 +18,7 @@ import { initNotFoundPage, NotFoundPage } from './pages/NotFound'
 import { WithErrorPage } from './pages/WithError'
 import { RouteError } from './components/Error/RouteError/RouteError'
 import { SignInPage } from './pages/SignInPage/SignInPage'
+import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
 
 const config = defineConfig({
   theme: {},
@@ -115,6 +116,10 @@ export const routes = [
         path: '*',
         Component: NotFoundPage,
         fetchData: initNotFoundPage,
+      },
+      {
+        path: '/leaderboard',
+        Component: LeaderboardPage,
       },
       // Все остальные страницы добавляйте сюда:
       // { path: 'dashboard', Component: DashboardPage }
