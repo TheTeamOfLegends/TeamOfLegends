@@ -11,8 +11,6 @@ interface ProfileState {
   loadProfile: () => Promise<void>
 
   updateAvatar: (file: File) => Promise<void>
-
-  updatePassword: (oldPassword: string, newPassword: string) => Promise<void>
 }
 
 export const useProfileStore = create<ProfileState>(set => ({
@@ -39,9 +37,5 @@ export const useProfileStore = create<ProfileState>(set => ({
     const user = await profileApi.updateAvatar(file)
 
     set({ user })
-  },
-
-  async updatePassword(oldPassword, newPassword) {
-    await profileApi.updatePassword(oldPassword, newPassword)
   },
 }))

@@ -1,11 +1,10 @@
-import { Box, Flex } from '@chakra-ui/react'
+import { ChangePasswordForm, ProfileInfo } from '@/components/profile'
+import { Flex } from '@chakra-ui/react'
 import { Helmet } from 'react-helmet'
 import { Header } from '../../components/Header/Header'
 import { AppSpinner } from '../../components/ui/loader/app-spinner'
 import { useInitProfile } from '../../hooks/useInitProfile'
 import { useProfileStore } from '../../stores/profileStore'
-import { ChangePasswordForm } from './ChangePasswordForm'
-import { ProfileInfo } from './ProfileInfo'
 
 export const ProfilePage = () => {
   useInitProfile()

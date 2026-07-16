@@ -1,7 +1,8 @@
+import { SUCCESS_MESSAGES } from '@/dictionary'
 import { Button, Stack, VStack } from '@chakra-ui/react'
 import { useForm } from 'react-hook-form'
-import { updatePassword } from '../../api/profileApi'
-import { toaster } from '../../components/ui/toaster'
+import { updatePassword } from '../../../api/profileApi'
+import { toaster } from '../../ui/toaster'
 import { PasswordField } from './PasswordField'
 
 export const DEFAULT_VALUES = {
@@ -15,23 +16,29 @@ export const ChangePasswordForm = () => {
     register,
     handleSubmit,
     reset,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<typeof DEFAULT_VALUES>({
     defaultValues: DEFAULT_VALUES,
+    mode: 'onBlur',
   })
 
   const onSubmit = async (data: typeof DEFAULT_VALUES) => {
     try {
       await updatePassword(data.old_password, data.new_password)
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toaster.create({
-          description: error.message,
-          type: 'error',
-        })
-      }
-    } finally {
+
+      toaster.create({
+        description: SUCCESS_MESSAGES.PASSWORD_CHANGE_SUCCESS,
+        type: 'success',
+      })
+
       reset()
+    } catch (error: unknown) {
+      toaster.create({
+        description:
+          error instanceof Error ? error.message : 'Не удалось изменить пароль',
+        type: 'error',
+      })
     }
   }
 
@@ -59,6 +66,10 @@ export const ChangePasswordForm = () => {
             register={register}
             error={errors.new_password_confirm?.message}
             withBorder={false}
+            rules={{
+              validate: (value: string) =>
+                value === getValues('new_password') || 'Пароли не совпадают',
+            }}
           />
           <Button
             type="submit"

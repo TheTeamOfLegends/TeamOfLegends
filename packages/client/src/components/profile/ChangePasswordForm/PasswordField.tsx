@@ -10,6 +10,7 @@ type PasswordFieldProps = {
   register: ReturnType<typeof useForm<typeof DEFAULT_VALUES>>['register']
   error?: string
   withBorder?: boolean
+  rules?: object
 }
 
 export const PasswordField = ({
@@ -18,6 +19,7 @@ export const PasswordField = ({
   register,
   error,
   withBorder = true,
+  rules,
 }: PasswordFieldProps) => {
   const [showPassword, setShowPassword] = useState(false)
 
@@ -48,7 +50,7 @@ export const PasswordField = ({
             </Button>
           }>
           <Input
-            {...register(name)}
+            {...register(name, rules)}
             type={showPassword ? 'text' : 'password'}
             border={0}
             h="20px"

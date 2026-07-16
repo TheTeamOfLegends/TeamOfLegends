@@ -1,7 +1,7 @@
-import { API_BASE_URL } from '@/constants'
 import { User } from '@/types/user'
 import { Box, Flex, Text } from '@chakra-ui/react'
-import AvatarPlaceholder from '@/assets/icons/avatar-placeholder.svg'
+import { AvatarUploader } from '../AvatarUploader'
+
 import { ProfileItem } from './ProfileItem'
 
 type ProfileInfoProps = {
@@ -29,17 +29,7 @@ export const ProfileInfo = ({
       maxWidth="510px"
       gap={10}>
       <Flex direction="column" alignItems="center" gap={2}>
-        <Box
-          w="130px"
-          h="130px"
-          rounded="md"
-          backgroundImage={
-            avatar
-              ? `url(${API_BASE_URL}/v2/resources${avatar})`
-              : `url(${AvatarPlaceholder})`
-          }
-          backgroundSize="cover"
-        />
+        <AvatarUploader avatar={avatar} />
         <Text fontWeight="bold">{first_name}</Text>
       </Flex>
       <Box>
