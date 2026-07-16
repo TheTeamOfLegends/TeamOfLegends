@@ -19,6 +19,7 @@ import { WithErrorPage } from './pages/WithError'
 import { RouteError } from './components/Error/RouteError/RouteError'
 import { SignInPage } from './pages/SignInPage/SignInPage'
 import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
+import { GameOverPage } from './pages/GameOverPage/GameOverPage'
 
 const config = defineConfig({
   theme: {},
@@ -120,6 +121,10 @@ export const routes = [
       {
         path: '/leaderboard',
         Component: LeaderboardPage,
+      },
+      {
+        path: '/game-over',
+        Component: GameOverPage,
       },
       // Все остальные страницы добавляйте сюда:
       // { path: 'dashboard', Component: DashboardPage }
