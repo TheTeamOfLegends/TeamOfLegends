@@ -14,7 +14,8 @@ import { Toaster } from './components/ui/toaster'
 import { API_BASE_URL } from './constants'
 import { FriendsPage, initFriendsPage } from './pages/FriendsPage'
 import { MainPage } from './pages/Main'
-import { initNotFoundPage, NotFoundPage } from './pages/NotFound'
+import { NotFoundPage } from './pages/NotFound'
+import { InternalServerErrorPage } from './pages/InternalServerError'
 import { WithErrorPage } from './pages/WithError'
 import { RouteError } from './components/Error/RouteError/RouteError'
 import { SignInPage } from './pages/SignInPage/SignInPage'
@@ -112,9 +113,12 @@ export const routes = [
         Component: WithErrorPage,
       },
       {
+        path: '/500',
+        Component: InternalServerErrorPage,
+      },
+      {
         path: '*',
         Component: NotFoundPage,
-        fetchData: initNotFoundPage,
       },
       // Все остальные страницы добавляйте сюда:
       // { path: 'dashboard', Component: DashboardPage }
