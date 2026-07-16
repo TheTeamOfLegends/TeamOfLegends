@@ -16,6 +16,7 @@ import { FriendsPage, initFriendsPage } from './pages/FriendsPage'
 import { MainPage } from './pages/Main'
 import { initNotFoundPage, NotFoundPage } from './pages/NotFound'
 import { SignInPage } from './pages/SignInPage/SignInPage'
+import { initProfilePage, ProfilePage } from './pages/Profile/ProfilePage'
 
 const config = defineConfig({
   theme: {},
@@ -91,6 +92,11 @@ export const routes = [
         path: '/friends',
         Component: FriendsPage,
         fetchData: initFriendsPage,
+      },
+      {
+        path: '/profile',
+        Component: ProfilePage,
+        fetchData: initProfilePage,
       },
       {
         path: '/sign-in',
