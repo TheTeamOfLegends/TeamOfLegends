@@ -12,7 +12,7 @@ import {
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { LuEye, LuEyeOff } from 'react-icons/lu'
-import { useNavigate } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { toaster } from '../../components/ui/toaster'
 import { API_BASE_URL } from '../../constants'
 import { ERROR_MESSAGES } from '../../dictionary'
@@ -107,8 +107,10 @@ export const SignInPage: React.FC = () => {
               <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
             </Field.Root>
 
-            <Link colorPalette="blue" href="/sign-up">
-              У вас нет аккаунта? Зарегистрироваться
+            <Link colorPalette="blue" asChild>
+              <RouterLink to="/sign-up">
+                У вас нет аккаунта? Зарегистрироваться
+              </RouterLink>
             </Link>
 
             <Button
