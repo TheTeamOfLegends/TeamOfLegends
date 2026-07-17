@@ -11,7 +11,7 @@ export interface ForumComment {
   id: number
   author: User
   body: string
-  createdAt: string
+  createdAt: string | null | undefined
 }
 
 interface ForumTopic {

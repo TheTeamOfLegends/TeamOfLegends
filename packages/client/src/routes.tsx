@@ -25,6 +25,7 @@ import {
   ForumTopicPage,
   initForumTopicPage,
 } from './pages/ForumTopicPage/ForumTopicPage'
+import { newCommentCreateAction } from './components/CommentForm/CommentForm'
 
 const config = defineConfig({
   theme: {},
@@ -108,6 +109,10 @@ export const routes = [
             path: 'topic/create',
             Component: ForumNewTopicPage,
             action: newTopicCreateAction,
+          },
+          {
+            path: 'topic/:topicId/comment/new',
+            action: newCommentCreateAction,
           },
           {
             path: 'topic/:topicId',

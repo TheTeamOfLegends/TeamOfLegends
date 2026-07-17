@@ -1,29 +1,28 @@
 import { Avatar, Box, Flex, SimpleGrid, VStack } from '@chakra-ui/react'
 import { User } from '../../slices/userSlice'
 import { dateFormatter } from '../../pages/ForumPage/ForumPage'
+import { ReactNode } from 'react'
+import { ForumComment } from '../../slices/forumTopicSlice'
+import { Topic } from '../../slices/forumSlice'
 
-// Удалить и переделать на Avatar.Image когда его починяет
+// Переделать на Avatar.Image когда его починяет
 const AvatarImage = Avatar.Image as React.FC<
   React.ImgHTMLAttributes<HTMLImageElement>
 >
 
 interface ForumTopicCardProps {
-  id: number
-  title?: string
   author: User
-  body: string
-  createdAt: string | null | undefined
+  children: ReactNode
 }
 
-export const ForumTopicCard = ({
-  title,
-  author,
-  body,
-  createdAt,
-}: ForumTopicCardProps) => {
+export const ForumTopicCard = ({ author, children }: ForumTopicCardProps) => {
   return (
-    <SimpleGrid gridTemplateColumns={'180px 1fr'}>
-      <VStack>
+    <SimpleGrid
+      gridTemplateColumns={'180px 1fr'}
+      width={'100%'}
+      bg={'gray.100'}
+      py={8}>
+      <VStack borderRightWidth="1px" borderRightColor="pink.500">
         <Avatar.Root boxSize="70px">
           {/* Fallback показывается, пока грузится картинка или если она битая */}
           <Avatar.Fallback name={`${author.name} ${author.secondName}`} />
@@ -37,11 +36,21 @@ export const ForumTopicCard = ({
           {[author.name, author.secondName].join(' ')}
         </Box>
       </VStack>
-      <Flex flexDirection={'column'} gapY={'2'}>
-        <Box fontSize={'small'}>{dateFormatter(createdAt)}</Box>
-        {title && <Box fontWeight={'semibold'}>{title}</Box>}
-        <Box whiteSpace="pre-line">{body}</Box>
+      <Flex flexDirection={'column'} gapY={'2'} px={8}>
+        {children}
       </Flex>
     </SimpleGrid>
+  )
+}
+
+export const ForumTopicCardBody = (props: ForumComment | Topic) => {
+  return (
+    <>
+      <Box fontSize={'small'}>{dateFormatter(props.createdAt)}</Box>
+      {'title' in props && props.title && (
+        <Box fontWeight={'semibold'}>{props.title}</Box>
+      )}
+      <Box whiteSpace="pre-line">{props.body}</Box>
+    </>
   )
 }

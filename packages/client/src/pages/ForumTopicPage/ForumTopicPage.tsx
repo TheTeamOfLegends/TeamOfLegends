@@ -9,10 +9,14 @@ import {
 import { Container, VStack, Flex, Text } from '@chakra-ui/react'
 import { useSelector } from 'react-redux'
 import { usePage } from '../../hooks/usePage'
-import { ForumTopicCard } from '../../components/ForumTopicCard/ForumTopicCard'
+import {
+  ForumTopicCard,
+  ForumTopicCardBody,
+} from '../../components/ForumTopicCard/ForumTopicCard'
 import { StarPagination } from '../../components/StarPagination/StarPagination'
 import { ForumComment } from '../../slices/forumTopicSlice'
 import { ReactNode } from 'react'
+import { CommentForm } from '../../components/CommentForm/CommentForm'
 
 interface ContainerProps {
   title: string
@@ -86,24 +90,21 @@ export const ForumTopicPage = () => {
 
   return (
     <ForumTopicContainer title={topic.title}>
-      <VStack gapY={8} align={'flex-start'}>
+      <VStack gapY={4} align={'flex-start'}>
         {pageNumber === 1 && (
-          <ForumTopicCard
-            id={topic.id}
-            title={topic.title}
-            author={topic.author}
-            body={topic.body}
-            createdAt={topic.createdAt}
-          />
+          <ForumTopicCard author={topic.author}>
+            <ForumTopicCardBody {...topic} />
+          </ForumTopicCard>
         )}
         {itemsToShow.map(comment => (
-          <ForumTopicCard
-            id={comment.id}
-            author={comment.author}
-            body={comment.body}
-            createdAt={comment.createdAt}
-          />
+          <ForumTopicCard author={comment.author} key={comment.id}>
+            <ForumTopicCardBody {...comment} />
+          </ForumTopicCard>
         ))}
+        <CommentForm
+          author={{ name: 'SomeCurrentUser', secondName: '' }}
+          topicId={topic.id}
+        />
         {itemsLength > ITEMS_PER_PAGE && (
           <Flex alignSelf={'center'}>
             <StarPagination

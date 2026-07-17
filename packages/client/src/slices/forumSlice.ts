@@ -3,13 +3,10 @@ import { RootState } from '../store'
 import { SERVER_HOST } from '../constants'
 import { User } from './userSlice'
 import { topicsMock } from '../pages/ForumPage/topicsMock'
+import { ForumComment } from './forumTopicSlice'
 
-export interface Topic {
-  id: number
+export interface Topic extends ForumComment {
   title: string
-  body: string
-  author: User
-  createdAt: string | null | undefined
 }
 
 interface Forum {
