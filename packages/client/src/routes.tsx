@@ -18,6 +18,7 @@ import { initNotFoundPage, NotFoundPage } from './pages/NotFound'
 import { WithErrorPage } from './pages/WithError'
 import { RouteError } from './components/Error/RouteError/RouteError'
 import { SignInPage } from './pages/SignInPage/SignInPage'
+import { SignUpPage } from './pages/SignUpPage/SignUpPage'
 
 const config = defineConfig({
   theme: {},
@@ -106,6 +107,10 @@ export const routes = [
             <SignInPage />
           </GuestOnlyGuard>
         ),
+      },
+      {
+        path: '/sign-up',
+        Component: SignUpPage,
       },
       {
         path: '/withError',
