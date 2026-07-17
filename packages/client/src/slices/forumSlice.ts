@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { SERVER_HOST } from '../constants'
-import { User } from './userSlice'
 import { topicsMock } from '../pages/ForumPage/topicsMock'
 import { ForumComment } from './forumTopicSlice'
 

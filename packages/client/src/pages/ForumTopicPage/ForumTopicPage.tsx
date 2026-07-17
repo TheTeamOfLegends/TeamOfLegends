@@ -23,21 +23,30 @@ interface ContainerProps {
   children: ReactNode
 }
 
-const ForumTopicContainer = (props: ContainerProps) => (
-  <div className="App">
-    <Helmet>
-      <meta charSet="utf-8" />
-      <title>{props.title}</title>
-      <meta name="description" content={props.title} />
-    </Helmet>
-    <Flex flexDirection={'column'} height="100vh">
-      <Header />
-      <Container p={'10'} bg={'gray.50'} flexGrow={1}>
-        {props.children}
-      </Container>
-    </Flex>
-  </div>
-)
+const ForumTopicContainer = (props: ContainerProps) => {
+  const MAX_TITLE_LENGTH = 60
+
+  const title =
+    props.title.length > MAX_TITLE_LENGTH
+      ? props.title.slice(0, MAX_TITLE_LENGTH) + '...'
+      : props.title
+
+  return (
+    <div className="App">
+      <Helmet>
+        <meta charSet="utf-8" />
+        <title>{title}</title>
+        <meta name="description" content={props.title} />
+      </Helmet>
+      <Flex flexDirection={'column'} height="100vh">
+        <Header />
+        <Container p={'10'} bg={'gray.50'} flexGrow={1}>
+          {props.children}
+        </Container>
+      </Flex>
+    </div>
+  )
+}
 
 export const ForumTopicPage = () => {
   // хук инициализации
@@ -64,13 +73,6 @@ export const ForumTopicPage = () => {
   }
 
   const { topic, comments } = activeTopic
-
-  const MAX_TITLE_LENGTH = 60
-
-  const title =
-    topic.title.length > MAX_TITLE_LENGTH
-      ? topic.title.slice(0, MAX_TITLE_LENGTH) + '...'
-      : topic.title
 
   // comments + 1st topic
   const itemsLength = comments.length + 1

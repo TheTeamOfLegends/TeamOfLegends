@@ -1,5 +1,5 @@
 import { Field, Textarea, Button, Flex } from '@chakra-ui/react'
-import { ActionFunctionArgs, Form, redirect, useParams } from 'react-router-dom'
+import { ActionFunctionArgs, Form, redirect } from 'react-router-dom'
 import { ForumTopicCard } from '../ForumTopicCard/ForumTopicCard'
 import { User } from '../../slices/userSlice'
 

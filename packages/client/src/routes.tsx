@@ -5,7 +5,7 @@ import {
   defineConfig,
 } from '@chakra-ui/react'
 import { GlobalStyles } from './theme/GlobalStyles'
-import { Children, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { AppSpinner } from './components/ui/loader/app-spinner'
 import { Toaster } from './components/ui/toaster'
