@@ -15,7 +15,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import {
   createContext,
   createFetchRequest,
-  createUrl
+  createUrl,
 } from './entry-server.utils'
 import { reducer } from './store'
 import { routes } from './routes'
@@ -42,16 +42,21 @@ export const render = async (req: ExpressRequest) => {
     throw new Error('Страница не найдена!')
   }
 
-  const [{route: { fetchData }}] = foundRoutes
+  // Последний матч — конкретная страница (/sign-in, /forum), а не layout '/'
+  const lastMatch = foundRoutes[foundRoutes.length - 1]
+  const fetchData =
+    'fetchData' in lastMatch.route ? lastMatch.route.fetchData : null
 
-  try {
-    await fetchData({
-      dispatch: store.dispatch,
-      state: store.getState(),
-      ctx: createContext(req),
-    })
-  } catch (e) {
-    console.log('Инициализация страницы произошла с ошибкой', e)
+  if (typeof fetchData === 'function') {
+    try {
+      await fetchData({
+        dispatch: store.dispatch,
+        state: store.getState(),
+        ctx: createContext(req),
+      })
+    } catch (e) {
+      console.log('Инициализация страницы произошла с ошибкой', e)
+    }
   }
 
   store.dispatch(setPageHasBeenInitializedOnServer(true))
@@ -59,14 +64,16 @@ export const render = async (req: ExpressRequest) => {
   const router = createStaticRouter(dataRoutes, context)
   const sheet = new ServerStyleSheet()
   try {
-    const html = ReactDOM.renderToString(sheet.collectStyles(
-      <Provider store={store}>
-        <StaticRouterProvider router={router} context={context} />
-      </Provider>
-    ));
-    const styleTags = sheet.getStyleTags();
+    const html = ReactDOM.renderToString(
+      sheet.collectStyles(
+        <Provider store={store}>
+          <StaticRouterProvider router={router} context={context} />
+        </Provider>
+      )
+    )
+    const styleTags = sheet.getStyleTags()
 
-    const helmet = Helmet.renderStatic();
+    const helmet = Helmet.renderStatic()
 
     return {
       html,

@@ -18,6 +18,12 @@ import { initNotFoundPage, NotFoundPage } from './pages/NotFound'
 import { WithErrorPage } from './pages/WithError'
 import { RouteError } from './components/Error/RouteError/RouteError'
 import { SignInPage } from './pages/SignInPage/SignInPage'
+import { SignUpPage } from './pages/SignUpPage/SignUpPage'
+import { ProfilePage } from './pages/ProfilePage/ProfilePage'
+import { GamePage } from './pages/GamePage/GamePage'
+import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
+import { ForumPage } from './pages/ForumPage/ForumPage'
+import { ForumTopicPage } from './pages/ForumTopicPage/ForumTopicPage'
 
 const config = defineConfig({
   theme: {},
@@ -108,6 +114,34 @@ export const routes = [
         ),
       },
       {
+        path: '/sign-up',
+        element: (
+          <GuestOnlyGuard>
+            <SignUpPage />
+          </GuestOnlyGuard>
+        ),
+      },
+      {
+        path: '/profile',
+        Component: ProfilePage,
+      },
+      {
+        path: '/game',
+        Component: GamePage,
+      },
+      {
+        path: '/leaderboard',
+        Component: LeaderboardPage,
+      },
+      {
+        path: '/forum',
+        Component: ForumPage,
+      },
+      {
+        path: '/forum/:topicId',
+        Component: ForumTopicPage,
+      },
+      {
         path: '/withError',
         Component: WithErrorPage,
       },
@@ -116,8 +150,6 @@ export const routes = [
         Component: NotFoundPage,
         fetchData: initNotFoundPage,
       },
-      // Все остальные страницы добавляйте сюда:
-      // { path: 'dashboard', Component: DashboardPage }
     ],
   },
 ]
