@@ -38,6 +38,7 @@ export const render = async (req: ExpressRequest) => {
   const url = createUrl(req)
 
   const foundRoutes = matchRoutes(routes, url)
+
   if (!foundRoutes) {
     throw new Error('Страница не найдена!')
   }
@@ -59,7 +60,9 @@ export const render = async (req: ExpressRequest) => {
         dispatch: store.dispatch,
         state: store.getState(),
         ctx: createContext(req),
+        params: lastMatch.params,
       })
+
       pageHasBeenInitializedOnServer = true
     } catch (e) {
       console.log('Инициализация страницы произошла с ошибкой', e)

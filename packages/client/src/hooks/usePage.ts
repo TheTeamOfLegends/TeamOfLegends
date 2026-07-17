@@ -5,6 +5,7 @@ import {
   selectPageHasBeenInitializedOnServer,
 } from '../slices/ssrSlice'
 import { PageInitArgs, PageInitContext } from '../types'
+import { useParams } from 'react-router-dom'
 
 const getCookie = (name: string) => {
   const matches = document.cookie.match(
@@ -32,6 +33,7 @@ export const usePage = ({ initPage }: PageProps) => {
     selectPageHasBeenInitializedOnServer
   )
   const store = useStore()
+  const params = useParams()
 
   useEffect(() => {
     if (pageHasBeenInitializedOnServer) {
@@ -39,6 +41,11 @@ export const usePage = ({ initPage }: PageProps) => {
       return
     }
 
-    initPage({ dispatch, state: store.getState(), ctx: createContext() })
-  }, [])
+    initPage({
+      dispatch,
+      state: store.getState(),
+      ctx: createContext(),
+      params,
+    })
+  }, [dispatch, pageHasBeenInitializedOnServer, initPage, params])
 }

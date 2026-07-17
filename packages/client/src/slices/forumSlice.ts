@@ -7,12 +7,13 @@ import { topicsMock } from '../pages/ForumPage/topicsMock'
 export interface Topic {
   id: number
   title: string
+  body: string
   author: User
-  createdAt: string
+  createdAt: string | null | undefined
 }
 
 interface Forum {
-  topics: Partial<Topic>[]
+  topics: Topic[]
 }
 
 export interface ForumState {
@@ -39,21 +40,21 @@ export const forumSlice = createSlice({
   reducers: {},
   extraReducers: builder => {
     builder
-      .addCase(fetchForumThunk.pending.type, state => {
+      .addCase(fetchForumThunk.pending, state => {
         state.topics = []
         state.isLoading = true
       })
       .addCase(
-        fetchForumThunk.fulfilled.type,
+        fetchForumThunk.fulfilled,
         (state, { payload }: PayloadAction<Forum['topics']>) => {
           state.topics = payload
           state.isLoading = false
         }
       )
-      .addCase(fetchForumThunk.rejected.type, state => {
+      .addCase(fetchForumThunk.rejected, state => {
+        state.isLoading = false
         //TODO удалить mock данные после интеграции с API
         state.topics = topicsMock
-        state.isLoading = false
       })
   },
 })

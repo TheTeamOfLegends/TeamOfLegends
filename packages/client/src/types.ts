@@ -15,4 +15,5 @@ export type PageInitArgs = {
   dispatch: AppDispatch
   state: RootState
   ctx: PageInitContext
+  params: Record<string, string | undefined>
 }

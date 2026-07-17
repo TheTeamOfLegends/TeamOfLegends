@@ -5,7 +5,7 @@ import {
   defineConfig,
 } from '@chakra-ui/react'
 import { GlobalStyles } from './theme/GlobalStyles'
-import { useEffect, useState } from 'react'
+import { Children, useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { AppSpinner } from './components/ui/loader/app-spinner'
 import { Toaster } from './components/ui/toaster'
@@ -17,6 +17,14 @@ import { initNotFoundPage, NotFoundPage } from './pages/NotFound'
 import { WithErrorPage } from './pages/WithError'
 import { RouteError } from './components/Error/RouteError/RouteError'
 import { SignInPage } from './pages/SignInPage/SignInPage'
+import {
+  ForumNewTopicPage,
+  newTopicCreateAction,
+} from './pages/ForumNewTopicPage/ForumNewTopicPage'
+import {
+  ForumTopicPage,
+  initForumTopicPage,
+} from './pages/ForumTopicPage/ForumTopicPage'
 
 const config = defineConfig({
   theme: {},
@@ -90,8 +98,23 @@ export const routes = [
       },
       {
         path: '/forum',
-        Component: ForumPage,
-        fetchData: initForumPage,
+        children: [
+          {
+            index: true,
+            Component: ForumPage,
+            fetchData: initForumPage,
+          },
+          {
+            path: 'topic/create',
+            Component: ForumNewTopicPage,
+            action: newTopicCreateAction,
+          },
+          {
+            path: 'topic/:topicId',
+            Component: ForumTopicPage,
+            fetchData: initForumTopicPage,
+          },
+        ],
       },
       {
         path: '/sign-in',
