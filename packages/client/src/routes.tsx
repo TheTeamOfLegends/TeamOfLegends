@@ -19,6 +19,7 @@ import { InternalServerErrorPage } from './pages/InternalServerError'
 import { WithErrorPage } from './pages/WithError'
 import { RouteError } from './components/Error/RouteError/RouteError'
 import { SignInPage } from './pages/SignInPage/SignInPage'
+import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
 import { initProfilePage, ProfilePage } from './pages/Profile/ProfilePage'
 import { SignUpPage } from './pages/SignUpPage/SignUpPage'
 
@@ -130,6 +131,10 @@ export const routes = [
       {
         path: '*',
         Component: NotFoundPage,
+      },
+      {
+        path: '/leaderboard',
+        Component: LeaderboardPage,
       },
       // Все остальные страницы добавляйте сюда:
       // { path: 'dashboard', Component: DashboardPage }
