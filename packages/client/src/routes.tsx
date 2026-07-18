@@ -20,6 +20,7 @@ import { WithErrorPage } from './pages/WithError'
 import { RouteError } from './components/Error/RouteError/RouteError'
 import { SignInPage } from './pages/SignInPage/SignInPage'
 import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
+import { initProfilePage, ProfilePage } from './pages/Profile/ProfilePage'
 import { SignUpPage } from './pages/SignUpPage/SignUpPage'
 
 const config = defineConfig({
@@ -101,6 +102,11 @@ export const routes = [
         path: '/friends',
         Component: FriendsPage,
         fetchData: initFriendsPage,
+      },
+      {
+        path: '/profile',
+        Component: ProfilePage,
+        fetchData: initProfilePage,
       },
       {
         path: '/sign-in',
