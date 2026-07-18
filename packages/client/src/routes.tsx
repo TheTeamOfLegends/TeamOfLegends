@@ -20,12 +20,11 @@ import { WithErrorPage } from './pages/WithError'
 import { RouteError } from './components/Error/RouteError/RouteError'
 import { SignInPage } from './pages/SignInPage/SignInPage'
 import { SignUpPage } from './pages/SignUpPage/SignUpPage'
-import { ProfilePage } from './pages/ProfilePage/ProfilePage'
+import { ProfilePage, initProfilePage } from './pages/Profile/ProfilePage'
 import { GamePage } from './pages/GamePage/GamePage'
 import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
 import { ForumPage } from './pages/ForumPage/ForumPage'
 import { ForumTopicPage } from './pages/ForumTopicPage/ForumTopicPage'
-import { initProfilePage } from './pages/Profile/ProfilePage'
 
 const config = defineConfig({
   theme: {},
@@ -129,10 +128,6 @@ export const routes = [
         ),
       },
       {
-        path: '/profile',
-        Component: ProfilePage,
-      },
-      {
         path: '/game',
         Component: GamePage,
       },
@@ -159,10 +154,6 @@ export const routes = [
       {
         path: '*',
         Component: NotFoundPage,
-      },
-      {
-        path: '/leaderboard',
-        Component: LeaderboardPage,
       },
     ],
   },

@@ -1,7 +1,7 @@
 import { ChangePasswordForm, ProfileInfo } from '@/components/profile'
 import { LogoutLink } from '@/components/profile/LogoutLink'
 import { Flex } from '@chakra-ui/react'
-import { Helmet } from 'react-helmet'
+import { Helmet } from 'react-helmet-async'
 import { Header } from '../../components/Header/Header'
 import { AppSpinner } from '../../components/ui/loader/app-spinner'
 import { useInitProfile } from '../../hooks/useInitProfile'

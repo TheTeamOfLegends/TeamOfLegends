@@ -21,6 +21,10 @@ export const createClientAndConnect = async (): Promise<Client | null> => {
 
     return client
   } catch (e) {
+    console.error(
+      '  ➜ 🎸 Database is not available on localhost:%s. Start Postgres, e.g. `docker compose up postgres -d`',
+      POSTGRES_PORT || 5432
+    )
     console.error(e)
   }
 
