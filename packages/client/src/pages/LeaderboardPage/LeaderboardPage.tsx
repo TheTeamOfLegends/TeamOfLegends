@@ -1,21 +1,28 @@
 import { Helmet } from 'react-helmet'
-import { Box, Heading, Text } from '@chakra-ui/react'
-
+import { Box, Flex } from '@chakra-ui/react'
 import { Header } from '../../components/Header/Header'
+import {
+  LeaderboardPanel,
+  LeaderboardTable,
+} from '../../components/Leaderboard'
+import { MOCK_LEADERBOARD } from './mocks'
+import { pageShellStyles, pageContentStyles } from './styles'
 
-export const LeaderboardPage = () => {
-  return (
-    <div>
-      <Helmet>
-        <meta charSet="utf-8" />
-        <title>Лидерборд</title>
-        <meta name="description" content="Страница лидерборда" />
-      </Helmet>
+export const LeaderboardPage = () => (
+  <>
+    <Helmet>
+      <meta charSet="utf-8" />
+      <title>Лидерборд — Space Assault</title>
+      <meta name="description" content="Таблица лидеров Space Assault" />
+    </Helmet>
+
+    <Box {...pageShellStyles}>
       <Header />
-      <Box p={10}>
-        <Heading mb={4}>Лидерборд</Heading>
-        <Text>Здесь будет таблица лидеров</Text>
-      </Box>
-    </div>
-  )
-}
+      <Flex {...pageContentStyles}>
+        <LeaderboardPanel>
+          <LeaderboardTable entries={MOCK_LEADERBOARD} />
+        </LeaderboardPanel>
+      </Flex>
+    </Box>
+  </>
+)

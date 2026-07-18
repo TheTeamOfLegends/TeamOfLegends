@@ -14,7 +14,8 @@ import { Toaster } from './components/ui/toaster'
 import { API_BASE_URL } from './constants'
 import { FriendsPage, initFriendsPage } from './pages/FriendsPage'
 import { MainPage } from './pages/Main'
-import { initNotFoundPage, NotFoundPage } from './pages/NotFound'
+import { NotFoundPage } from './pages/NotFound'
+import { InternalServerErrorPage } from './pages/InternalServerError'
 import { WithErrorPage } from './pages/WithError'
 import { RouteError } from './components/Error/RouteError/RouteError'
 import { SignInPage } from './pages/SignInPage/SignInPage'
@@ -24,6 +25,7 @@ import { GamePage } from './pages/GamePage/GamePage'
 import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
 import { ForumPage } from './pages/ForumPage/ForumPage'
 import { ForumTopicPage } from './pages/ForumTopicPage/ForumTopicPage'
+import { initProfilePage } from './pages/Profile/ProfilePage'
 
 const config = defineConfig({
   theme: {},
@@ -106,6 +108,11 @@ export const routes = [
         fetchData: initFriendsPage,
       },
       {
+        path: '/profile',
+        Component: ProfilePage,
+        fetchData: initProfilePage,
+      },
+      {
         path: '/sign-in',
         element: (
           <GuestOnlyGuard>
@@ -146,9 +153,16 @@ export const routes = [
         Component: WithErrorPage,
       },
       {
+        path: '/500',
+        Component: InternalServerErrorPage,
+      },
+      {
         path: '*',
         Component: NotFoundPage,
-        fetchData: initNotFoundPage,
+      },
+      {
+        path: '/leaderboard',
+        Component: LeaderboardPage,
       },
     ],
   },
