@@ -27,3 +27,4 @@ dist-ssr
 server/*.js
 server/*.d.ts
 tsconfig.server.tsbuildinfo
+client/server/index.js
