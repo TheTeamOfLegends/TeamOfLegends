@@ -14,9 +14,13 @@ import { Toaster } from './components/ui/toaster'
 import { API_BASE_URL } from './constants'
 import { FriendsPage, initFriendsPage } from './pages/FriendsPage'
 import { MainPage } from './pages/Main'
-import { initNotFoundPage, NotFoundPage } from './pages/NotFound'
+import { NotFoundPage } from './pages/NotFound'
+import { InternalServerErrorPage } from './pages/InternalServerError'
+import { WithErrorPage } from './pages/WithError'
+import { RouteError } from './components/Error/RouteError/RouteError'
 import { SignInPage } from './pages/SignInPage/SignInPage'
 import { initProfilePage, ProfilePage } from './pages/Profile/ProfilePage'
+import { SignUpPage } from './pages/SignUpPage/SignUpPage'
 
 const config = defineConfig({
   theme: {},
@@ -83,6 +87,11 @@ export const routes = [
   {
     path: '/',
     element: <RootLayout />,
+    errorElement: (
+      <ChakraProvider value={system}>
+        <RouteError />
+      </ChakraProvider>
+    ),
     children: [
       {
         path: '/',
@@ -107,9 +116,20 @@ export const routes = [
         ),
       },
       {
+        path: '/sign-up',
+        Component: SignUpPage,
+      },
+      {
+        path: '/withError',
+        Component: WithErrorPage,
+      },
+      {
+        path: '/500',
+        Component: InternalServerErrorPage,
+      },
+      {
         path: '*',
         Component: NotFoundPage,
-        fetchData: initNotFoundPage,
       },
       // Все остальные страницы добавляйте сюда:
       // { path: 'dashboard', Component: DashboardPage }

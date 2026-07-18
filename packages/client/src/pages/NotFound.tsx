@@ -1,22 +1,5 @@
-import { Helmet } from 'react-helmet'
-
-import { Header } from '../components/Header/Header'
-import { usePage } from '../hooks/usePage'
+import { ErrorPage } from '../layouts/ErrorPage'
 
 export const NotFoundPage = () => {
-  usePage({ initPage: initNotFoundPage })
-
-  return (
-    <div className="App">
-      <Helmet>
-        <meta charSet="utf-8" />
-        <title>404</title>
-        <meta name="description" content="Страница не найдена" />
-      </Helmet>
-      <Header />
-      Страница не найдена!
-    </div>
-  )
+  return <ErrorPage errorCode="404" errorText="Страница не найдена" />
 }
-
-export const initNotFoundPage = () => Promise.resolve()
