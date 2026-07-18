@@ -163,6 +163,7 @@ export const routes = [
           {
             path: '/profile',
             Component: ProfilePage,
+            fetchData: initProfilePage,
           },
           {
             path: '/game',
@@ -185,9 +186,12 @@ export const routes = [
             Component: WithErrorPage,
           },
           {
+            path: '/500',
+            Component: InternalServerErrorPage,
+          },
+          {
             path: '*',
             Component: NotFoundPage,
-            fetchData: initNotFoundPage,
           },
         ],
       },
