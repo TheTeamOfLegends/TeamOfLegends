@@ -62,3 +62,16 @@ export const updateAvatar = async (avatar: File) => {
 
   return response.json()
 }
+
+export const logout = async () => {
+  const response = await fetch(`${API_BASE_URL}/v2/auth/logout`, {
+    credentials: 'include',
+    method: 'POST',
+  })
+
+  if (!response.ok) {
+    const responseBody = await response.json()
+
+    throw new Error(responseBody.reason ?? ERROR_MESSAGES.REQUEST_FAILED)
+  }
+}

@@ -31,13 +31,14 @@ export const PasswordField = ({
         align="center"
         py={2}
         borderBottomWidth={withBorder ? 1 : 0}>
-        <Field.Label fontWeight="bold" flexShrink={0}>
+        <Field.Label fontWeight="bold" fontSize="13px" flexShrink={0}>
           {label}
         </Field.Label>
 
         <InputGroup
           w="full"
           color="fg.subtle"
+          fontSize="13px"
           endElementProps={{ px: 0 }}
           endElement={
             <Button

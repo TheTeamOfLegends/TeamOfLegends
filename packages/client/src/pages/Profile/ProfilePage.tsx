@@ -1,4 +1,5 @@
 import { ChangePasswordForm, ProfileInfo } from '@/components/profile'
+import { LogoutLink } from '@/components/profile/LogoutLink'
 import { Flex } from '@chakra-ui/react'
 import { Helmet } from 'react-helmet'
 import { Header } from '../../components/Header/Header'
@@ -36,6 +37,7 @@ export const ProfilePage = () => {
         direction="column">
         <ProfileInfo user={user} />
         <ChangePasswordForm />
+        <LogoutLink />
       </Flex>
     </>
   )
