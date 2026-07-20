@@ -27,6 +27,8 @@ import {
   initForumTopicPage,
 } from './pages/ForumTopicPage/ForumTopicPage'
 import { newCommentCreateAction } from './components/CommentForm/CommentForm'
+import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
+import { initProfilePage, ProfilePage } from './pages/Profile/ProfilePage'
 import { SignUpPage } from './pages/SignUpPage/SignUpPage'
 
 const config = defineConfig({
@@ -124,6 +126,11 @@ export const routes = [
         ],
       },
       {
+        path: '/profile',
+        Component: ProfilePage,
+        fetchData: initProfilePage,
+      },
+      {
         path: '/sign-in',
         element: (
           <GuestOnlyGuard>
@@ -146,6 +153,10 @@ export const routes = [
       {
         path: '*',
         Component: NotFoundPage,
+      },
+      {
+        path: '/leaderboard',
+        Component: LeaderboardPage,
       },
       // Все остальные страницы добавляйте сюда:
       // { path: 'dashboard', Component: DashboardPage }
