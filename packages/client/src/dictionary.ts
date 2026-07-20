@@ -8,3 +8,9 @@ export const SUCCESS_MESSAGES = {
   PASSWORD_CHANGE_SUCCESS: 'Пароль успешно обновлен',
   AVATAR_CHANGE_SUCCESS: 'Пароль успешно обновлен',
 }
+
+export const VALIDATION_MESSAGES = {
+  MIN_LENGTH: (length: number) => `Минимум ${length} символов`,
+  MAX_LENGTH: (length: number) => `Максимум ${length} символов`,
+  REQUIRED_INPUT: 'Обязательно для заполнения',
+}
