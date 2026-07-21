@@ -19,9 +19,12 @@ import { InternalServerErrorPage } from './pages/InternalServerError'
 import { WithErrorPage } from './pages/WithError'
 import { RouteError } from './components/Error/RouteError/RouteError'
 import { SignInPage } from './pages/SignInPage/SignInPage'
-import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
-import { initProfilePage, ProfilePage } from './pages/Profile/ProfilePage'
 import { SignUpPage } from './pages/SignUpPage/SignUpPage'
+import { ProfilePage, initProfilePage } from './pages/Profile/ProfilePage'
+import { GamePage } from './pages/GamePage/GamePage'
+import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
+import { ForumPage } from './pages/ForumPage/ForumPage'
+import { ForumTopicPage } from './pages/ForumTopicPage/ForumTopicPage'
 
 const config = defineConfig({
   theme: {},
@@ -118,7 +121,27 @@ export const routes = [
       },
       {
         path: '/sign-up',
-        Component: SignUpPage,
+        element: (
+          <GuestOnlyGuard>
+            <SignUpPage />
+          </GuestOnlyGuard>
+        ),
+      },
+      {
+        path: '/game',
+        Component: GamePage,
+      },
+      {
+        path: '/leaderboard',
+        Component: LeaderboardPage,
+      },
+      {
+        path: '/forum',
+        Component: ForumPage,
+      },
+      {
+        path: '/forum/:topicId',
+        Component: ForumTopicPage,
       },
       {
         path: '/withError',
@@ -132,12 +155,6 @@ export const routes = [
         path: '*',
         Component: NotFoundPage,
       },
-      {
-        path: '/leaderboard',
-        Component: LeaderboardPage,
-      },
-      // Все остальные страницы добавляйте сюда:
-      // { path: 'dashboard', Component: DashboardPage }
     ],
   },
 ]

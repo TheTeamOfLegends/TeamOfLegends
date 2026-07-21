@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet'
+import { Helmet } from 'react-helmet-async'
 
 import { useSelector } from '../store'
 import { Header } from '../components/Header/Header'

@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/server'
 import { Provider } from 'react-redux'
 import { ServerStyleSheet } from 'styled-components'
-import { Helmet } from 'react-helmet'
+import { HelmetProvider, type HelmetServerState } from 'react-helmet-async'
 import { Request as ExpressRequest } from 'express'
 import {
   createStaticHandler,
@@ -15,7 +15,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import {
   createContext,
   createFetchRequest,
-  createUrl
+  createUrl,
 } from './entry-server.utils'
 import { reducer } from './store'
 import { routes } from './routes'
@@ -42,31 +42,45 @@ export const render = async (req: ExpressRequest) => {
     throw new Error('Страница не найдена!')
   }
 
-  const [{route: { fetchData }}] = foundRoutes
+  // Последний матч — конкретная страница (/sign-in, /forum), а не layout '/'
+  const lastMatch = foundRoutes[foundRoutes.length - 1]
+  const fetchData =
+    'fetchData' in lastMatch.route ? lastMatch.route.fetchData : null
 
-  try {
-    await fetchData({
-      dispatch: store.dispatch,
-      state: store.getState(),
-      ctx: createContext(req),
-    })
-  } catch (e) {
-    console.log('Инициализация страницы произошла с ошибкой', e)
+  if (typeof fetchData === 'function') {
+    try {
+      await fetchData({
+        dispatch: store.dispatch,
+        state: store.getState(),
+        ctx: createContext(req),
+      })
+    } catch (e) {
+      console.log('Инициализация страницы произошла с ошибкой', e)
+    }
   }
 
   store.dispatch(setPageHasBeenInitializedOnServer(true))
 
   const router = createStaticRouter(dataRoutes, context)
   const sheet = new ServerStyleSheet()
-  try {
-    const html = ReactDOM.renderToString(sheet.collectStyles(
-      <Provider store={store}>
-        <StaticRouterProvider router={router} context={context} />
-      </Provider>
-    ));
-    const styleTags = sheet.getStyleTags();
+  const helmetContext: { helmet?: HelmetServerState } = {}
 
-    const helmet = Helmet.renderStatic();
+  try {
+    const html = ReactDOM.renderToString(
+      sheet.collectStyles(
+        <HelmetProvider context={helmetContext}>
+          <Provider store={store}>
+            <StaticRouterProvider router={router} context={context} />
+          </Provider>
+        </HelmetProvider>
+      )
+    )
+    const styleTags = sheet.getStyleTags()
+    const helmet = helmetContext.helmet
+
+    if (!helmet) {
+      throw new Error('Helmet context is empty')
+    }
 
     return {
       html,
