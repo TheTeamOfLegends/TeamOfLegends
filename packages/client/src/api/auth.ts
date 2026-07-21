@@ -1,12 +1,9 @@
-import { API_BASE_URL } from '../constants'
+import { getProfile } from './profileApi'
 
 export const checkAuth = async (): Promise<boolean> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/v2/auth/user`, {
-      credentials: 'include',
-    })
-
-    return response.ok
+    await getProfile()
+    return true
   } catch {
     return false
   }
