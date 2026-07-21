@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { AppSpinner } from './components/ui/loader/app-spinner'
 import { Toaster } from './components/ui/toaster'
-import { API_BASE_URL } from './constants'
+import { checkAuth } from './api/auth'
 import { FriendsPage, initFriendsPage } from './pages/FriendsPage'
 import { MainPage } from './pages/Main'
 import { NotFoundPage } from './pages/NotFound'
@@ -52,35 +52,66 @@ export type PageInitArgs = {
   ctx: PageInitContext
 }
 
+/** Страницы только для гостей (вход / регистрация) */
 export const GuestOnlyGuard = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate()
-  const [isLoading, setIsLoading] = useState(true)
+  const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
-    const isAutheticated = async () => {
-      try {
-        setIsLoading(true)
+    let cancelled = false
 
-        const response = await fetch(`${API_BASE_URL}/v2/auth/user`, {
-          credentials: 'include',
-        })
-
-        return response.ok
-      } catch (error) {
-        return false
-      } finally {
-        setIsLoading(false)
+    checkAuth().then(isAuthenticated => {
+      if (cancelled) {
+        return
       }
-    }
 
-    isAutheticated().then(result => {
-      if (result) {
-        navigate('/')
+      if (isAuthenticated) {
+        navigate('/', { replace: true })
+        return
       }
+
+      setIsReady(true)
     })
+
+    return () => {
+      cancelled = true
+    }
   }, [navigate])
 
-  if (isLoading) {
+  if (!isReady) {
+    return <AppSpinner />
+  }
+
+  return <>{children}</>
+}
+
+/** Защищённые страницы: без авторизации редирект на /sign-in */
+export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
+  const navigate = useNavigate()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+
+    checkAuth().then(result => {
+      if (cancelled) {
+        return
+      }
+
+      if (!result) {
+        navigate('/sign-in', { replace: true })
+        return
+      }
+
+      setIsAuthenticated(true)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [navigate])
+
+  if (!isAuthenticated) {
     return <AppSpinner />
   }
 
@@ -98,20 +129,6 @@ export const routes = [
     ),
     children: [
       {
-        path: '/',
-        Component: MainPage,
-      },
-      {
-        path: '/friends',
-        Component: FriendsPage,
-        fetchData: initFriendsPage,
-      },
-      {
-        path: '/profile',
-        Component: ProfilePage,
-        fetchData: initProfilePage,
-      },
-      {
         path: '/sign-in',
         element: (
           <GuestOnlyGuard>
@@ -128,32 +145,55 @@ export const routes = [
         ),
       },
       {
-        path: '/game',
-        Component: GamePage,
-      },
-      {
-        path: '/leaderboard',
-        Component: LeaderboardPage,
-      },
-      {
-        path: '/forum',
-        Component: ForumPage,
-      },
-      {
-        path: '/forum/:topicId',
-        Component: ForumTopicPage,
-      },
-      {
-        path: '/withError',
-        Component: WithErrorPage,
-      },
-      {
-        path: '/500',
-        Component: InternalServerErrorPage,
-      },
-      {
-        path: '*',
-        Component: NotFoundPage,
+        element: (
+          <AuthGuard>
+            <Outlet />
+          </AuthGuard>
+        ),
+        children: [
+          {
+            path: '/',
+            Component: MainPage,
+          },
+          {
+            path: '/friends',
+            Component: FriendsPage,
+            fetchData: initFriendsPage,
+          },
+          {
+            path: '/profile',
+            Component: ProfilePage,
+            fetchData: initProfilePage,
+          },
+          {
+            path: '/game',
+            Component: GamePage,
+          },
+          {
+            path: '/leaderboard',
+            Component: LeaderboardPage,
+          },
+          {
+            path: '/forum',
+            Component: ForumPage,
+          },
+          {
+            path: '/forum/:topicId',
+            Component: ForumTopicPage,
+          },
+          {
+            path: '/withError',
+            Component: WithErrorPage,
+          },
+          {
+            path: '/500',
+            Component: InternalServerErrorPage,
+          },
+          {
+            path: '*',
+            Component: NotFoundPage,
+          },
+        ],
       },
     ],
   },

@@ -15,7 +15,7 @@ import { LuEye, LuEyeOff } from 'react-icons/lu'
 import { toaster } from '../../components/ui/toaster'
 import { API_BASE_URL } from '../../constants'
 import { ERROR_MESSAGES } from '../../dictionary'
-import { useNavigate } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 
 const DEFAULT_VALUES = {
   first_name: '',
@@ -153,8 +153,8 @@ export const SignUpPage: React.FC = () => {
               )}
             </Field.Root>
 
-            <Link colorPalette="blue" href="/sign-in">
-              Уже есть аккаунт? Войти
+            <Link colorPalette="blue" asChild>
+              <RouterLink to="/sign-in">Уже есть аккаунт? Войти</RouterLink>
             </Link>
 
             <Button
