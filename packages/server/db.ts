@@ -3,6 +3,8 @@ import { Client } from 'pg'
 const { POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_PORT } =
   process.env
 
+const PG_PORT = POSTGRES_PORT || 5432
+
 export const createClientAndConnect = async (): Promise<Client | null> => {
   try {
     const client = new Client({
@@ -23,7 +25,7 @@ export const createClientAndConnect = async (): Promise<Client | null> => {
   } catch (e) {
     console.error(
       '  ➜ 🎸 Database is not available on localhost:%s. Start Postgres, e.g. `docker compose up postgres -d`',
-      POSTGRES_PORT || 5432
+      PG_PORT
     )
     console.error(e)
   }
