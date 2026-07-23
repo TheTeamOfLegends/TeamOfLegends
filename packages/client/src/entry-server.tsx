@@ -38,28 +38,38 @@ export const render = async (req: ExpressRequest) => {
   const url = createUrl(req)
 
   const foundRoutes = matchRoutes(routes, url)
+
   if (!foundRoutes) {
     throw new Error('Страница не найдена!')
   }
 
-  // Последний матч — конкретная страница (/sign-in, /forum), а не layout '/'
+  // Берем последний элемент массива
+  // (это самый конкретный маршрут, например, /forum или /sign-in, а не '/')
   const lastMatch = foundRoutes[foundRoutes.length - 1]
   const fetchData =
     'fetchData' in lastMatch.route ? lastMatch.route.fetchData : null
 
+  let pageHasBeenInitializedOnServer = false
+
+  // Вызываем только если это действительно функция
   if (typeof fetchData === 'function') {
     try {
       await fetchData({
         dispatch: store.dispatch,
         state: store.getState(),
         ctx: createContext(req),
+        params: lastMatch.params,
       })
+
+      pageHasBeenInitializedOnServer = true
     } catch (e) {
       console.log('Инициализация страницы произошла с ошибкой', e)
     }
   }
 
-  store.dispatch(setPageHasBeenInitializedOnServer(true))
+  store.dispatch(
+    setPageHasBeenInitializedOnServer(pageHasBeenInitializedOnServer)
+  )
 
   const router = createStaticRouter(dataRoutes, context)
   const sheet = new ServerStyleSheet()

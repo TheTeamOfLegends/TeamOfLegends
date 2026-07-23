@@ -1,5 +1,3 @@
-import { AppDispatch, RootState } from './store'
-
 import {
   ChakraProvider,
   createSystem,
@@ -13,18 +11,26 @@ import { AppSpinner } from './components/ui/loader/app-spinner'
 import { Toaster } from './components/ui/toaster'
 import { checkAuth } from './api/auth'
 import { FriendsPage, initFriendsPage } from './pages/FriendsPage'
+import { ForumPage, initForumPage } from './pages/ForumPage/ForumPage'
 import { MainPage } from './pages/Main'
 import { NotFoundPage } from './pages/NotFound'
 import { InternalServerErrorPage } from './pages/InternalServerError'
 import { WithErrorPage } from './pages/WithError'
 import { RouteError } from './components/Error/RouteError/RouteError'
 import { SignInPage } from './pages/SignInPage/SignInPage'
+import {
+  ForumNewTopicPage,
+  newTopicCreateAction,
+} from './pages/ForumNewTopicPage/ForumNewTopicPage'
+import {
+  ForumTopicPage,
+  initForumTopicPage,
+} from './pages/ForumTopicPage/ForumTopicPage'
+import { newCommentCreateAction } from './components/CommentForm/CommentForm'
 import { SignUpPage } from './pages/SignUpPage/SignUpPage'
 import { ProfilePage, initProfilePage } from './pages/Profile/ProfilePage'
 import { GamePage } from './pages/GamePage/GamePage'
 import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
-import { ForumPage } from './pages/ForumPage/ForumPage'
-import { ForumTopicPage } from './pages/ForumTopicPage/ForumTopicPage'
 
 const config = defineConfig({
   theme: {},
@@ -40,16 +46,6 @@ const RootLayout = () => {
       <Toaster />
     </ChakraProvider>
   )
-}
-
-export type PageInitContext = {
-  clientToken?: string
-}
-
-export type PageInitArgs = {
-  dispatch: AppDispatch
-  state: RootState
-  ctx: PageInitContext
 }
 
 /** Страницы только для гостей (вход / регистрация) */
@@ -175,11 +171,27 @@ export const routes = [
           },
           {
             path: '/forum',
-            Component: ForumPage,
-          },
-          {
-            path: '/forum/:topicId',
-            Component: ForumTopicPage,
+            children: [
+              {
+                index: true,
+                Component: ForumPage,
+                fetchData: initForumPage,
+              },
+              {
+                path: 'topic/create',
+                Component: ForumNewTopicPage,
+                action: newTopicCreateAction,
+              },
+              {
+                path: 'topic/:topicId/comment/new',
+                action: newCommentCreateAction,
+              },
+              {
+                path: 'topic/:topicId',
+                Component: ForumTopicPage,
+                fetchData: initForumTopicPage,
+              },
+            ],
           },
           {
             path: '/withError',

@@ -8,7 +8,7 @@ import {
   selectIsLoadingFriends,
 } from '../slices/friendsSlice'
 import { fetchUserThunk, selectUser } from '../slices/userSlice'
-import { PageInitArgs } from '../routes'
+import { PageInitArgs } from '../types'
 import { usePage } from '../hooks/usePage'
 
 export const FriendsPage = () => {

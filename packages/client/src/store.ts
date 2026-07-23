@@ -10,6 +10,8 @@ import { configureStore } from '@reduxjs/toolkit'
 import friendsReducer from './slices/friendsSlice'
 import ssrReducer from './slices/ssrSlice'
 import userReducer from './slices/userSlice'
+import forumReducer from './slices/forumSlice'
+import forumTopicReducer from './slices/forumTopicSlice'
 
 // Глобально декларируем в window наш ключик
 // и задаем ему тип такой же как у стейта в сторе
@@ -23,6 +25,8 @@ export const reducer = combineReducers({
   friends: friendsReducer,
   ssr: ssrReducer,
   user: userReducer,
+  forum: forumReducer,
+  forumActiveTopic: forumTopicReducer,
 })
 
 export const store = configureStore({
