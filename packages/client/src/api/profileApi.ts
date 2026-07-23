@@ -13,8 +13,6 @@ export const getProfile = async () => {
 
   const user = await response.json()
 
-  console.log('PROFILE', user)
-
   return user
 }
 

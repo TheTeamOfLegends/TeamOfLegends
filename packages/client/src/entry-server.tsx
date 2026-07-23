@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/server'
 import { Provider } from 'react-redux'
 import { ServerStyleSheet } from 'styled-components'
-import { Helmet } from 'react-helmet'
+import { HelmetProvider, type HelmetServerState } from 'react-helmet-async'
 import { Request as ExpressRequest } from 'express'
 import {
   createStaticHandler,
@@ -43,11 +43,9 @@ export const render = async (req: ExpressRequest) => {
     throw new Error('Страница не найдена!')
   }
 
-  // Берем ПОСЛЕДНИЙ элемент массива
+  // Берем последний элемент массива
   // (это самый конкретный маршрут, например, /forum или /sign-in, а не '/')
   const lastMatch = foundRoutes[foundRoutes.length - 1]
-
-  // Достаем fetchData
   const fetchData =
     'fetchData' in lastMatch.route ? lastMatch.route.fetchData : null
 
@@ -75,17 +73,24 @@ export const render = async (req: ExpressRequest) => {
 
   const router = createStaticRouter(dataRoutes, context)
   const sheet = new ServerStyleSheet()
+  const helmetContext: { helmet?: HelmetServerState } = {}
+
   try {
     const html = ReactDOM.renderToString(
       sheet.collectStyles(
-        <Provider store={store}>
-          <StaticRouterProvider router={router} context={context} />
-        </Provider>
+        <HelmetProvider context={helmetContext}>
+          <Provider store={store}>
+            <StaticRouterProvider router={router} context={context} />
+          </Provider>
+        </HelmetProvider>
       )
     )
     const styleTags = sheet.getStyleTags()
+    const helmet = helmetContext.helmet
 
-    const helmet = Helmet.renderStatic()
+    if (!helmet) {
+      throw new Error('Helmet context is empty')
+    }
 
     return {
       html,

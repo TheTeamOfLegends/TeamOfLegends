@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { AppSpinner } from './components/ui/loader/app-spinner'
 import { Toaster } from './components/ui/toaster'
-import { API_BASE_URL } from './constants'
+import { checkAuth } from './api/auth'
 import { FriendsPage, initFriendsPage } from './pages/FriendsPage'
 import { ForumPage, initForumPage } from './pages/ForumPage/ForumPage'
 import { MainPage } from './pages/Main'
@@ -27,9 +27,10 @@ import {
   initForumTopicPage,
 } from './pages/ForumTopicPage/ForumTopicPage'
 import { newCommentCreateAction } from './components/CommentForm/CommentForm'
-import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
-import { initProfilePage, ProfilePage } from './pages/Profile/ProfilePage'
 import { SignUpPage } from './pages/SignUpPage/SignUpPage'
+import { ProfilePage, initProfilePage } from './pages/Profile/ProfilePage'
+import { GamePage } from './pages/GamePage/GamePage'
+import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
 
 const config = defineConfig({
   theme: {},
@@ -47,35 +48,66 @@ const RootLayout = () => {
   )
 }
 
+/** Страницы только для гостей (вход / регистрация) */
 export const GuestOnlyGuard = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate()
-  const [isLoading, setIsLoading] = useState(true)
+  const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
-    const isAutheticated = async () => {
-      try {
-        setIsLoading(true)
+    let cancelled = false
 
-        const response = await fetch(`${API_BASE_URL}/v2/auth/user`, {
-          credentials: 'include',
-        })
-
-        return response.ok
-      } catch (error) {
-        return false
-      } finally {
-        setIsLoading(false)
+    checkAuth().then(isAuthenticated => {
+      if (cancelled) {
+        return
       }
-    }
 
-    isAutheticated().then(result => {
-      if (result) {
-        navigate('/')
+      if (isAuthenticated) {
+        navigate('/', { replace: true })
+        return
       }
+
+      setIsReady(true)
     })
+
+    return () => {
+      cancelled = true
+    }
   }, [navigate])
 
-  if (isLoading) {
+  if (!isReady) {
+    return <AppSpinner />
+  }
+
+  return <>{children}</>
+}
+
+/** Защищённые страницы: без авторизации редирект на /sign-in */
+export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
+  const navigate = useNavigate()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+
+    checkAuth().then(result => {
+      if (cancelled) {
+        return
+      }
+
+      if (!result) {
+        navigate('/sign-in', { replace: true })
+        return
+      }
+
+      setIsAuthenticated(true)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [navigate])
+
+  if (!isAuthenticated) {
     return <AppSpinner />
   }
 
@@ -93,44 +125,6 @@ export const routes = [
     ),
     children: [
       {
-        path: '/',
-        Component: MainPage,
-      },
-      {
-        path: '/friends',
-        Component: FriendsPage,
-        fetchData: initFriendsPage,
-      },
-      {
-        path: '/forum',
-        children: [
-          {
-            index: true,
-            Component: ForumPage,
-            fetchData: initForumPage,
-          },
-          {
-            path: 'topic/create',
-            Component: ForumNewTopicPage,
-            action: newTopicCreateAction,
-          },
-          {
-            path: 'topic/:topicId/comment/new',
-            action: newCommentCreateAction,
-          },
-          {
-            path: 'topic/:topicId',
-            Component: ForumTopicPage,
-            fetchData: initForumTopicPage,
-          },
-        ],
-      },
-      {
-        path: '/profile',
-        Component: ProfilePage,
-        fetchData: initProfilePage,
-      },
-      {
         path: '/sign-in',
         element: (
           <GuestOnlyGuard>
@@ -140,26 +134,79 @@ export const routes = [
       },
       {
         path: '/sign-up',
-        Component: SignUpPage,
+        element: (
+          <GuestOnlyGuard>
+            <SignUpPage />
+          </GuestOnlyGuard>
+        ),
       },
       {
-        path: '/withError',
-        Component: WithErrorPage,
+        element: (
+          <AuthGuard>
+            <Outlet />
+          </AuthGuard>
+        ),
+        children: [
+          {
+            path: '/',
+            Component: MainPage,
+          },
+          {
+            path: '/friends',
+            Component: FriendsPage,
+            fetchData: initFriendsPage,
+          },
+          {
+            path: '/profile',
+            Component: ProfilePage,
+            fetchData: initProfilePage,
+          },
+          {
+            path: '/game',
+            Component: GamePage,
+          },
+          {
+            path: '/leaderboard',
+            Component: LeaderboardPage,
+          },
+          {
+            path: '/forum',
+            children: [
+              {
+                index: true,
+                Component: ForumPage,
+                fetchData: initForumPage,
+              },
+              {
+                path: 'topic/create',
+                Component: ForumNewTopicPage,
+                action: newTopicCreateAction,
+              },
+              {
+                path: 'topic/:topicId/comment/new',
+                action: newCommentCreateAction,
+              },
+              {
+                path: 'topic/:topicId',
+                Component: ForumTopicPage,
+                fetchData: initForumTopicPage,
+              },
+            ],
+          },
+          {
+            path: '/withError',
+            Component: WithErrorPage,
+          },
+          {
+            path: '/500',
+            Component: InternalServerErrorPage,
+          },
+          {
+            path: '*',
+            Component: NotFoundPage,
+          },
+        ],
       },
-      {
-        path: '/500',
-        Component: InternalServerErrorPage,
-      },
-      {
-        path: '*',
-        Component: NotFoundPage,
-      },
-      {
-        path: '/leaderboard',
-        Component: LeaderboardPage,
-      },
-      // Все остальные страницы добавляйте сюда:
-      // { path: 'dashboard', Component: DashboardPage }
     ],
   },
 ]

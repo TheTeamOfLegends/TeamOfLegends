@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet'
+import { Helmet } from 'react-helmet-async'
 import { useSelector } from '../../store'
 import { Header } from '../../components/Header/Header'
 import { fetchForumThunk, selectForum } from '../../slices/forumSlice'
@@ -64,7 +64,7 @@ export const ForumPage = () => {
       <Helmet>
         <meta charSet="utf-8" />
         <title>Форум</title>
-        <meta name="description" content="Форум приложения" />
+        <meta name="description" content="Страница форума" />
       </Helmet>
       <Flex flexDirection={'column'} height="100vh">
         <Header />
