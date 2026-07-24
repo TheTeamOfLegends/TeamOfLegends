@@ -1,5 +1,6 @@
 import { Text, Link as ChakraLink, StackProps, HStack } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
+import PlayerIcon from '@/assets/game/player.svg?react'
 
 type LogoProps = {
   size?: 'sm' | 'md' | 'lg'
@@ -39,62 +40,7 @@ export const Logo = ({
   const content = (
     <HStack gap={3} {...props}>
       {showIcon && (
-        <svg width={s.icon} height={s.icon} viewBox="0 0 60 60" fill="none">
-          <defs>
-            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="4" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-
-            <radialGradient id="planet" cx="50%" cy="50%">
-              <stop offset="0%" stopColor="#7D6BFF" />
-              <stop offset="100%" stopColor="#5B4DFF" />
-            </radialGradient>
-          </defs>
-
-          <circle
-            cx="30"
-            cy="30"
-            r="17"
-            fill="#5A4CFF"
-            opacity="0.18"
-            filter="url(#glow)"
-          />
-
-          <circle
-            cx="30"
-            cy="30"
-            r="14"
-            fill="none"
-            stroke="#4B56B8"
-            strokeWidth="2"
-            opacity="0.6"
-          />
-
-          <circle
-            cx="30"
-            cy="30"
-            r="11"
-            fill="none"
-            stroke="#26366F"
-            strokeWidth="1.5"
-            opacity="0.8"
-          />
-
-          <circle cx="30" cy="30" r="9" fill="url(#planet)" />
-
-          <rect
-            x="30"
-            y="28.25"
-            width="17"
-            height="3.5"
-            rx="1.75"
-            fill="#000"
-          />
-        </svg>
+        <PlayerIcon width={50} style={{ transform: 'rotate(40deg)' }} />
       )}
 
       <Text

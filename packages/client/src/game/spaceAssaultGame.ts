@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
+import { loadGameAssets, gameAssets } from './gameAssets'
 import { getHighScore, saveHighScore } from './scoreStorage'
 
 export type GameOverPayload = {
@@ -21,6 +22,8 @@ export function startGame(
   canvas: HTMLCanvasElement,
   options: StartGameOptions = {}
 ): GameController {
+  loadGameAssets()
+
   const ctx = canvas.getContext('2d')
   if (!ctx) {
     return {
@@ -502,12 +505,9 @@ export function startGame(
         Math.max(Math.min(enemy.lifetime / 1000, 2), 0.5)
       enemy.radius = 10 + 10 * Math.min(enemy.lifetime / 1000, 0.5)
 
-      // Update rotation based on speed
-      // Rotation speed scales with enemy velocity
-      const rotationSpeed =
-        enemy.speed * 0.02 * Math.max(Math.min(enemy.lifetime / 1000, 2), 0.5) // Adjust multiplier for faster/slower rotation
-      enemy.rotation +=
-        enemy.rotation_direction > 0 ? rotationSpeed : -rotationSpeed
+      const targetRotation = Math.atan2(dy, dx)
+
+      enemy.rotation += (targetRotation - enemy.rotation) * 0.08
 
       if (distance < player.radius + enemy.radius) {
         player.currentHp -= 10
@@ -534,6 +534,8 @@ export function startGame(
       const bullet = bullets[i]
       bullet.x += bullet.velocityX
       bullet.y += bullet.velocityY
+
+      particles.push(createParticle(bullet.x, bullet.y, '#ffd84d', 'spark'))
 
       // Remove bullets that are off screen
       if (
@@ -842,58 +844,43 @@ export function startGame(
   }
 
   function drawPlayer() {
-    // Art Deco geometric player - diamond/art deco shape
+    if (!gameAssets.player) {
+      return
+    }
+
+    const dx = mouseX - player.x
+    const dy = mouseY - player.y
+    const angle = Math.atan2(dy, dx)
+
+    const size = player.radius * 5
+
     ctx.save()
+
     ctx.translate(player.x, player.y)
+    ctx.rotate(angle + Math.PI / 2)
 
-    //ctx.beginPath();
-    //ctx.moveTo(0, -player.radius);
-    //ctx.lineTo(player.radius * 0.6, player.radius * 0.8);
-    //ctx.lineTo(-player.radius * 0.6, player.radius * 0.8);
-    //ctx.closePath();
-    //ctx.fillStyle = '#4444ff';
-    //ctx.fill();
-
-    // Shield effect
-    ctx.beginPath()
-    ctx.arc(0, 0, player.radius + 5, 0, Math.PI * 2)
-    ctx.strokeStyle = `rgba(100, 200, 255, ${
-      (player.currentHp / player.maxHp) * 0.5
-    })`
-    ctx.lineWidth = 2
-    ctx.stroke()
-
-    // Inner detail
-    ctx.beginPath()
-    ctx.arc(0, 0, player.radius * 0.9, 0, Math.PI * 2)
-    ctx.fillStyle = '#6666ff'
-    //ctx.fillStyle = '#2b2bfcff';
-    ctx.fill()
+    ctx.drawImage(gameAssets.player, -size / 2, -size / 2, size, size)
 
     ctx.restore()
   }
 
   function drawEnemies() {
-    enemies.forEach(enemy => {
-      ctx.save()
-      ctx.translate(enemy.x, enemy.y)
-      ctx.rotate(enemy.rotation)
+    if (!gameAssets.enemy) {
+      return
+    }
 
-      // Spiky enemy design with rotation
-      ctx.beginPath()
-      const spikes = 8
-      for (let i = 0; i <= spikes * 2 + 1; i++) {
-        const radius = i % 2 === 0 ? enemy.radius : enemy.radius * 0.6
-        const angle = (i / spikes) * Math.PI
-        const x = Math.cos(angle) * radius
-        const y = Math.sin(angle) * radius
-        if (i === 0) ctx.moveTo(x, y)
-        else ctx.lineTo(x, y)
-      }
-      ctx.fillStyle = '#edd7ffff'
-      ctx.fill()
-      ctx.strokeStyle = '#b98cbbff'
-      ctx.stroke()
+    enemies.forEach((enemy, index) => {
+      const size = enemy.radius * 3
+
+      const wobble = Math.sin(performance.now() * 0.008 + index) * 0.04
+
+      ctx.save()
+
+      ctx.translate(enemy.x, enemy.y)
+
+      ctx.rotate(enemy.rotation + wobble + Math.PI / 2)
+
+      ctx.drawImage(gameAssets.enemy, -size / 2, -size / 2, size, size)
 
       ctx.restore()
     })
@@ -993,18 +980,39 @@ export function startGame(
 
   function drawBullets() {
     bullets.forEach(bullet => {
+      const alpha =
+        bullet.lifetime != null ? Math.min(bullet.lifetime / 10, 1) : 1
+
+      // свечение
+      const glow = ctx.createRadialGradient(
+        bullet.x,
+        bullet.y,
+        0,
+        bullet.x,
+        bullet.y,
+        bullet.radius * 4
+      )
+
+      glow.addColorStop(0, `rgba(255,255,220,${alpha})`)
+      glow.addColorStop(0.4, `rgba(255,220,80,${alpha * 0.8})`)
+      glow.addColorStop(1, 'rgba(255,220,0,0)')
+
+      ctx.beginPath()
+      ctx.arc(bullet.x, bullet.y, bullet.radius * 2, 0, Math.PI * 2)
+      ctx.fillStyle = glow
+      ctx.fill()
+
+      // ядро
       ctx.beginPath()
       ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2)
-      if (bullet.lifetime != null)
-        ctx.fillStyle =
-          'rgb(' +
-          255 * Math.min(bullet.lifetime / 10, 1).toString() +
-          ',' +
-          255 * Math.min(bullet.lifetime / 10, 1).toString() +
-          ', 0)'
-      else ctx.fillStyle = 'yellow'
+      ctx.fillStyle = '#fff7c0'
       ctx.fill()
-      ctx.closePath()
+
+      // яркая точка в центре
+      ctx.beginPath()
+      ctx.arc(bullet.x, bullet.y, bullet.radius * 0.35, 0, Math.PI * 2)
+      ctx.fillStyle = '#ffffff'
+      ctx.fill()
     })
   }
 
@@ -1153,19 +1161,27 @@ export function startGame(
 
       // Update sparkle effect
       if (now > bonus.nextSparkle) {
-        particles.push(
-          createParticle(
-            bonus.x + (Math.random() - 0.5) * bonus.radius,
-            bonus.y + (Math.random() - 0.5) * bonus.radius,
-            bonus.type === 'health'
-              ? '#50ff50'
-              : bonus.type === 'shotgun'
-              ? '#8550ffff'
-              : '#ffff50',
-            'spark'
+        const color =
+          bonus.type === 'health'
+            ? '#50ff50'
+            : bonus.type === 'shotgun'
+            ? '#8550ff'
+            : '#ffff50'
+
+        for (let j = 0; j < 3; j++) {
+          const angle = now * 0.003 + i + j * ((Math.PI * 2) / 3)
+
+          particles.push(
+            createParticle(
+              bonus.x + Math.cos(angle) * bonus.radius,
+              bonus.y + Math.sin(angle) * bonus.radius,
+              color,
+              'spark'
+            )
           )
-        )
-        bonus.nextSparkle = now + 100 // Sparkle every 100ms
+        }
+
+        bonus.nextSparkle = now + 50
       }
 
       // Check player collision
@@ -1202,45 +1218,76 @@ export function startGame(
   }
 
   function drawBonuses() {
-    const now = Date.now()
-    bonuses.forEach(bonus => {
-      // Draw glow effect
+    const now = performance.now()
+
+    bonuses.forEach((bonus, index) => {
+      const pulse = 1 + Math.sin(now * 0.005 + index) * 0.08
+
+      const image =
+        bonus.type === 'health'
+          ? gameAssets.health
+          : bonus.type === 'machineGun'
+          ? gameAssets.machineGun
+          : gameAssets.shotgun
+
+      if (!image) {
+        return
+      }
+
+      // ---------- glow ----------
+      const glowColor =
+        bonus.type === 'health'
+          ? 'rgba(0,255,120,0.35)'
+          : bonus.type === 'machineGun'
+          ? 'rgba(255,220,0,0.35)'
+          : 'rgba(140,100,255,0.35)'
+
       const gradient = ctx.createRadialGradient(
         bonus.x,
         bonus.y,
-        bonus.radius * 0.5,
+        bonus.radius * 0.3,
         bonus.x,
         bonus.y,
         bonus.radius * 2
       )
-      if (bonus.type != 'shotgun')
-        gradient.addColorStop(
-          0,
-          bonus.type === 'health'
-            ? 'rgba(0, 255, 0, 0.3)'
-            : 'rgba(255, 255, 0, 0.3)'
-        )
-      else gradient.addColorStop(0, 'rgba(135, 80, 255, 0.3)')
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
+
+      gradient.addColorStop(0, glowColor)
+      gradient.addColorStop(1, 'rgba(0,0,0,0)')
 
       ctx.beginPath()
       ctx.arc(bonus.x, bonus.y, bonus.radius * 2, 0, Math.PI * 2)
       ctx.fillStyle = gradient
       ctx.fill()
 
-      // Draw main bonus circle with pulsing effect
-      const pulse = Math.sin(now * 0.01) * 0.2 + 0.8
-      ctx.beginPath()
-      ctx.arc(bonus.x, bonus.y, bonus.radius * pulse, 0, Math.PI * 2)
-      ctx.fillStyle = bonus.color
-      ctx.fill()
+      ctx.save()
 
-      // Draw icon inside
-      ctx.fillStyle = 'black'
-      ctx.font = 'bold 12px Arial'
-      ctx.textAlign = 'center'
-      //ctx.fillText(bonus.type === 'machineGun' ? 'MG' : 'HP', bonus.x, bonus.y + 4);
-      ctx.textAlign = 'left'
+      ctx.translate(bonus.x, bonus.y)
+
+      ctx.translate(0, Math.sin(now * 0.003 + index) * 2)
+
+      if (bonus.type === 'machineGun') {
+        ctx.rotate(now * 0.001)
+      }
+
+      const sizeMultiplier = bonus.type === 'health' ? 2.0 : 2.4
+
+      const maxSize = bonus.radius * sizeMultiplier * pulse
+
+      const aspect = image.width / image.height
+
+      let width, height
+
+      if (aspect >= 1) {
+        width = maxSize
+        height = maxSize / aspect
+      } else {
+        height = maxSize
+        width = maxSize * aspect
+      }
+
+      ctx.drawImage(image, -width / 2, -height / 2, width, height)
+
+      ctx.restore()
     })
   }
 
@@ -1461,7 +1508,6 @@ export function startGame(
       drawPlatforms()
       drawParticles()
       drawPlayer()
-      drawGun()
       drawEnemies()
       drawBullets()
       drawBonuses()
@@ -1469,24 +1515,6 @@ export function startGame(
       drawEnemyIndicators()
       drawUI()
     }
-  }
-
-  function drawGun() {
-    const gunLength = 20
-    const dx = mouseX - player.x
-    const dy = mouseY - player.y
-    const angle = Math.atan2(dy, dx)
-
-    ctx.beginPath()
-    ctx.moveTo(player.x, player.y)
-    ctx.lineTo(
-      player.x + Math.cos(angle) * gunLength,
-      player.y + Math.sin(angle) * gunLength
-    )
-    ctx.strokeStyle = 'black'
-    ctx.lineWidth = 3
-    ctx.stroke()
-    ctx.closePath()
   }
 
   function handleInput(event) {
@@ -1623,7 +1651,7 @@ export function startGame(
 
     // Create bonus with random type
     const isHealthBonus = Math.random() < 0.5
-    if (!isHealthBonus && Math.random() < 0.1) {
+    if (!isHealthBonus && Math.random() < 0.3) {
       bonuses.push({
         x,
         y,
