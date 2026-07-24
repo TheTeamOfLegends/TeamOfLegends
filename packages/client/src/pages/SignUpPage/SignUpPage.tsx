@@ -1,23 +1,24 @@
-import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import * as authApi from '@/api/authApi'
+import { SignUpFormValues, signUpSchema } from '@/utils/zod/validationSchema'
 import {
   Box,
   Button,
+  Field,
   Flex,
   Heading,
   Input,
-  VStack,
-  Field,
   InputGroup,
   Link,
+  VStack,
 } from '@chakra-ui/react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import React, { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { LuEye, LuEyeOff } from 'react-icons/lu'
-import { toaster } from '../../components/ui/toaster'
-import { API_BASE_URL } from '../../constants'
-import { ERROR_MESSAGES } from '../../dictionary'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { toaster } from '../../components/ui/toaster'
 
-const DEFAULT_VALUES = {
+const DEFAULT_VALUES: SignUpFormValues = {
   first_name: '',
   second_name: '',
   login: '',
@@ -34,33 +35,22 @@ export const SignUpPage: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<typeof DEFAULT_VALUES>({
+  } = useForm<SignUpFormValues>({
+    resolver: zodResolver(signUpSchema),
+    mode: 'onBlur',
     defaultValues: DEFAULT_VALUES,
   })
 
-  const onSubmit = async (data: typeof DEFAULT_VALUES) => {
+  const onSubmit = async (data: SignUpFormValues) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/v2/auth/signup`, {
-        credentials: 'include',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+      await authApi.signUp(data)
+
+      toaster.create({
+        description: 'Вы успешно зарегистрировались',
+        type: 'success',
       })
 
-      if (response.ok) {
-        toaster.create({
-          description: 'Вы успешно зарегистрировались',
-          type: 'success',
-        })
-
-        navigate('/game')
-      } else {
-        const responseBody = await response.json()
-
-        throw new Error(responseBody.reason ?? ERROR_MESSAGES.REQUEST_FAILED)
-      }
+      navigate('/game')
     } catch (error: unknown) {
       if (error instanceof Error) {
         toaster.create({
