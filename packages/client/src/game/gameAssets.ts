@@ -4,12 +4,15 @@ import healthSrc from '@/assets/game/health.svg'
 import shotgunSrc from '@/assets/game/shotgun.svg'
 import machineGunSrc from '@/assets/game/machine-gun.svg'
 
-export const gameAssets = {
-  player: null as HTMLImageElement | null,
-  enemy: null as HTMLImageElement | null,
-  health: null as HTMLImageElement | null,
-  shotgun: null as HTMLImageElement | null,
-  machineGun: null as HTMLImageElement | null,
+type AssetKey = 'player' | 'enemy' | 'health' | 'shotgun' | 'machineGun'
+type GameAssetsState = Record<AssetKey, HTMLImageElement | null>
+
+export const gameAssets: GameAssetsState = {
+  player: null,
+  enemy: null,
+  health: null,
+  shotgun: null,
+  machineGun: null,
 }
 
 function createImage(src: string) {
