@@ -1,4 +1,4 @@
-import { ForumComment } from '../../slices/forumTopicSlice'
+import { ForumComment } from '../../types/forum'
 
 // выведем количество комментариев равное ID топика - 1
 export const commentsMock = (n: number): ForumComment[] =>

@@ -1,4 +1,4 @@
-import { Topic } from '../../slices/forumSlice'
+import { Topic } from '../../types/forum'
 
 export const topicsMock: Topic[] = [
   {

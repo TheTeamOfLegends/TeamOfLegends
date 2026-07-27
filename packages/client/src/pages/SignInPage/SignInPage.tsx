@@ -17,6 +17,7 @@ import { useForm } from 'react-hook-form'
 import { LuEye, LuEyeOff } from 'react-icons/lu'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { toaster } from '../../components/ui/toaster'
+import { useProfileStore } from '@/stores/profileStore'
 
 const DEFAULT_VALUES: SignInFormValues = {
   login: '',
@@ -26,6 +27,7 @@ const DEFAULT_VALUES: SignInFormValues = {
 export const SignInPage: React.FC = () => {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
+  const loadProfile = useProfileStore(s => s.loadProfile)
 
   const {
     register,
@@ -40,6 +42,7 @@ export const SignInPage: React.FC = () => {
   const onSubmit = async (data: SignInFormValues) => {
     try {
       await authApi.signIn(data)
+      await loadProfile()
 
       navigate('/game')
     } catch (error: unknown) {
