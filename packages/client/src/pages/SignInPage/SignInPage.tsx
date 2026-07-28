@@ -1,3 +1,5 @@
+import * as authApi from '@/api/authApi'
+import { SignInFormValues, signInSchema } from '@/utils/zod/validationSchema'
 import {
   Box,
   Button,
@@ -9,15 +11,14 @@ import {
   Link,
   VStack,
 } from '@chakra-ui/react'
+import { zodResolver } from '@hookform/resolvers/zod'
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { LuEye, LuEyeOff } from 'react-icons/lu'
-import { useNavigate } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { toaster } from '../../components/ui/toaster'
-import { API_BASE_URL } from '../../constants'
-import { ERROR_MESSAGES } from '../../dictionary'
 
-const DEFAULT_VALUES = {
+const DEFAULT_VALUES: SignInFormValues = {
   login: '',
   password: '',
 }
@@ -30,28 +31,17 @@ export const SignInPage: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<typeof DEFAULT_VALUES>({
+  } = useForm<SignInFormValues>({
+    resolver: zodResolver(signInSchema),
+    mode: 'onBlur',
     defaultValues: DEFAULT_VALUES,
   })
 
-  const onSubmit = async (data: typeof DEFAULT_VALUES) => {
+  const onSubmit = async (data: SignInFormValues) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/v2/auth/signin`, {
-        credentials: 'include',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
+      await authApi.signIn(data)
 
-      if (response.ok) {
-        navigate('/game')
-      } else {
-        const responseBody = await response.json()
-
-        throw new Error(responseBody.reason ?? ERROR_MESSAGES.REQUEST_FAILED)
-      }
+      navigate('/game')
     } catch (error: unknown) {
       if (error instanceof Error) {
         toaster.create({
@@ -107,8 +97,10 @@ export const SignInPage: React.FC = () => {
               <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
             </Field.Root>
 
-            <Link colorPalette="blue" href="/sign-up">
-              У вас нет аккаунта? Зарегистрироваться
+            <Link colorPalette="blue" asChild>
+              <RouterLink to="/sign-up">
+                У вас нет аккаунта? Зарегистрироваться
+              </RouterLink>
             </Link>
 
             <Button

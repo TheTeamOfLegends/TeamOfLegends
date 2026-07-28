@@ -1,7 +1,6 @@
 import dotenv from 'dotenv'
 dotenv.config()
 
-import { HelmetData } from 'react-helmet'
 import express, { Request as ExpressRequest } from 'express'
 import path from 'path'
 
@@ -9,6 +8,12 @@ import fs from 'fs/promises'
 import { createServer as createViteServer, ViteDevServer } from 'vite'
 import serialize from 'serialize-javascript'
 import cookieParser from 'cookie-parser'
+
+type HelmetRenderable = {
+  meta: { toString(): string }
+  title: { toString(): string }
+  link: { toString(): string }
+}
 
 const port = process.env.PORT || 80
 const clientPath = path.join(__dirname, '..')
@@ -42,7 +47,7 @@ async function createServer() {
       let render: (req: ExpressRequest) => Promise<{
         html: string
         initialState: unknown
-        helmet: HelmetData
+        helmet: HelmetRenderable
         styleTags: string
       }>
       let template: string

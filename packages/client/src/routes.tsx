@@ -1,5 +1,3 @@
-import { AppDispatch, RootState } from './store'
-
 import {
   ChakraProvider,
   createSystem,
@@ -11,13 +9,27 @@ import { useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { AppSpinner } from './components/ui/loader/app-spinner'
 import { Toaster } from './components/ui/toaster'
-import { API_BASE_URL } from './constants'
+import { checkAuth } from './api/auth'
 import { FriendsPage, initFriendsPage } from './pages/FriendsPage'
+import { ForumPage, initForumPage } from './pages/ForumPage/ForumPage'
 import { MainPage } from './pages/Main'
-import { initNotFoundPage, NotFoundPage } from './pages/NotFound'
+import { NotFoundPage } from './pages/NotFound'
+import { InternalServerErrorPage } from './pages/InternalServerError'
 import { WithErrorPage } from './pages/WithError'
 import { RouteError } from './components/Error/RouteError/RouteError'
 import { SignInPage } from './pages/SignInPage/SignInPage'
+import {
+  ForumNewTopicPage,
+  newTopicCreateAction,
+} from './pages/ForumNewTopicPage/ForumNewTopicPage'
+import {
+  ForumTopicPage,
+  initForumTopicPage,
+} from './pages/ForumTopicPage/ForumTopicPage'
+import { newCommentCreateAction } from './components/CommentForm/CommentForm'
+import { SignUpPage } from './pages/SignUpPage/SignUpPage'
+import { ProfilePage, initProfilePage } from './pages/Profile/ProfilePage'
+import { GamePage } from './pages/GamePage/GamePage'
 import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
 import { GameOverPage } from './pages/GameOverPage/GameOverPage'
 
@@ -37,45 +49,66 @@ const RootLayout = () => {
   )
 }
 
-export type PageInitContext = {
-  clientToken?: string
-}
-
-export type PageInitArgs = {
-  dispatch: AppDispatch
-  state: RootState
-  ctx: PageInitContext
-}
-
+/** Страницы только для гостей (вход / регистрация) */
 export const GuestOnlyGuard = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate()
-  const [isLoading, setIsLoading] = useState(true)
+  const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
-    const isAutheticated = async () => {
-      try {
-        setIsLoading(true)
+    let cancelled = false
 
-        const response = await fetch(`${API_BASE_URL}/v2/auth/user`, {
-          credentials: 'include',
-        })
-
-        return response.ok
-      } catch (error) {
-        return false
-      } finally {
-        setIsLoading(false)
+    checkAuth().then(isAuthenticated => {
+      if (cancelled) {
+        return
       }
-    }
 
-    isAutheticated().then(result => {
-      if (result) {
-        navigate('/')
+      if (isAuthenticated) {
+        navigate('/', { replace: true })
+        return
       }
+
+      setIsReady(true)
     })
+
+    return () => {
+      cancelled = true
+    }
   }, [navigate])
 
-  if (isLoading) {
+  if (!isReady) {
+    return <AppSpinner />
+  }
+
+  return <>{children}</>
+}
+
+/** Защищённые страницы: без авторизации редирект на /sign-in */
+export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
+  const navigate = useNavigate()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+
+    checkAuth().then(result => {
+      if (cancelled) {
+        return
+      }
+
+      if (!result) {
+        navigate('/sign-in', { replace: true })
+        return
+      }
+
+      setIsAuthenticated(true)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [navigate])
+
+  if (!isAuthenticated) {
     return <AppSpinner />
   }
 
@@ -93,15 +126,6 @@ export const routes = [
     ),
     children: [
       {
-        path: '/',
-        Component: MainPage,
-      },
-      {
-        path: '/friends',
-        Component: FriendsPage,
-        fetchData: initFriendsPage,
-      },
-      {
         path: '/sign-in',
         element: (
           <GuestOnlyGuard>
@@ -110,17 +134,79 @@ export const routes = [
         ),
       },
       {
-        path: '/withError',
-        Component: WithErrorPage,
+        path: '/sign-up',
+        element: (
+          <GuestOnlyGuard>
+            <SignUpPage />
+          </GuestOnlyGuard>
+        ),
       },
       {
-        path: '*',
-        Component: NotFoundPage,
-        fetchData: initNotFoundPage,
-      },
-      {
-        path: '/leaderboard',
-        Component: LeaderboardPage,
+        element: (
+          <AuthGuard>
+            <Outlet />
+          </AuthGuard>
+        ),
+        children: [
+          {
+            path: '/',
+            Component: MainPage,
+          },
+          {
+            path: '/friends',
+            Component: FriendsPage,
+            fetchData: initFriendsPage,
+          },
+          {
+            path: '/profile',
+            Component: ProfilePage,
+            fetchData: initProfilePage,
+          },
+          {
+            path: '/game',
+            Component: GamePage,
+          },
+          {
+            path: '/leaderboard',
+            Component: LeaderboardPage,
+          },
+          {
+            path: '/forum',
+            children: [
+              {
+                index: true,
+                Component: ForumPage,
+                fetchData: initForumPage,
+              },
+              {
+                path: 'topic/create',
+                Component: ForumNewTopicPage,
+                action: newTopicCreateAction,
+              },
+              {
+                path: 'topic/:topicId/comment/new',
+                action: newCommentCreateAction,
+              },
+              {
+                path: 'topic/:topicId',
+                Component: ForumTopicPage,
+                fetchData: initForumTopicPage,
+              },
+            ],
+          },
+          {
+            path: '/withError',
+            Component: WithErrorPage,
+          },
+          {
+            path: '/500',
+            Component: InternalServerErrorPage,
+          },
+          {
+            path: '*',
+            Component: NotFoundPage,
+          },
+        ],
       },
       {
         path: '/game-over',
@@ -128,6 +214,7 @@ export const routes = [
       },
       // Все остальные страницы добавляйте сюда:
       // { path: 'dashboard', Component: DashboardPage }
+
     ],
   },
 ]
