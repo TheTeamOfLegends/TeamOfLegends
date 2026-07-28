@@ -31,6 +31,7 @@ import { SignUpPage } from './pages/SignUpPage/SignUpPage'
 import { ProfilePage, initProfilePage } from './pages/Profile/ProfilePage'
 import { GamePage } from './pages/GamePage/GamePage'
 import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
+import { GameOverPage } from './pages/GameOverPage/GameOverPage'
 
 const config = defineConfig({
   theme: {},
@@ -207,6 +208,13 @@ export const routes = [
           },
         ],
       },
+      {
+        path: '/game-over',
+        Component: GameOverPage,
+      },
+      // Все остальные страницы добавляйте сюда:
+      // { path: 'dashboard', Component: DashboardPage }
+
     ],
   },
 ]
