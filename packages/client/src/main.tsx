@@ -4,8 +4,10 @@ import { HelmetProvider } from 'react-helmet-async'
 import { Provider } from 'react-redux'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { store } from './store'
-
 import { routes } from './routes'
+import registerSW from './service-workers/registerSW'
+
+registerSW() // init serviceWorkers
 
 const router = createBrowserRouter(routes)
 
