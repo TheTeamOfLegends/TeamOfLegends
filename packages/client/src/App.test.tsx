@@ -1,7 +1,5 @@
-import { Provider } from 'react-redux'
 import App from './App'
 import { render, screen } from '@testing-library/react'
-import { store } from './store'
 
 // @ts-ignore
 global.fetch = jest.fn(() =>
@@ -9,10 +7,6 @@ global.fetch = jest.fn(() =>
 )
 
 test('Example test', async () => {
-  render(
-    <Provider store={store}>
-      <App />
-    </Provider>
-  )
+  render(<App />)
   expect(screen.getByText('Пользователь не найден!')).toBeDefined()
 })

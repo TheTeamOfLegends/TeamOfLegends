@@ -1,9 +1,7 @@
 import { Avatar, Box, Flex, SimpleGrid, VStack } from '@chakra-ui/react'
-import { User } from '../../slices/userSlice'
 import { dateFormatter } from '../../pages/ForumPage/ForumPage'
 import { ReactNode } from 'react'
-import { ForumComment } from '../../slices/forumTopicSlice'
-import { Topic } from '../../slices/forumSlice'
+import { ForumAuthor, ForumComment, Topic } from '../../types/forum'
 
 // Переделать на Avatar.Image когда его починяет
 const AvatarImage = Avatar.Image as React.FC<
@@ -11,7 +9,7 @@ const AvatarImage = Avatar.Image as React.FC<
 >
 
 interface ForumTopicCardProps {
-  author: User
+  author: ForumAuthor
   children: ReactNode
 }
 

@@ -1,6 +1,4 @@
-import React from 'react'
 import ReactDOM from 'react-dom/server'
-import { Provider } from 'react-redux'
 import { ServerStyleSheet } from 'styled-components'
 import { HelmetProvider, type HelmetServerState } from 'react-helmet-async'
 import { Request as ExpressRequest } from 'express'
@@ -10,19 +8,20 @@ import {
   StaticRouterProvider,
 } from 'react-router-dom/server'
 import { matchRoutes } from 'react-router-dom'
-import { configureStore } from '@reduxjs/toolkit'
 
 import {
   createContext,
   createFetchRequest,
   createUrl,
 } from './entry-server.utils'
-import { reducer } from './store'
 import { routes } from './routes'
 import './index.css'
-import { setPageHasBeenInitializedOnServer } from './slices/ssrSlice'
+import { getAppInitialState, resetStoresForSsr } from './stores/hydrate'
+import { useSsrStore } from './stores/ssrStore'
 
 export const render = async (req: ExpressRequest) => {
+  resetStoresForSsr()
+
   const { query, dataRoutes } = createStaticHandler(routes)
   const fetchRequest = createFetchRequest(req)
   const context = await query(fetchRequest)
@@ -30,10 +29,6 @@ export const render = async (req: ExpressRequest) => {
   if (context instanceof Response) {
     throw context
   }
-
-  const store = configureStore({
-    reducer,
-  })
 
   const url = createUrl(req)
 
@@ -55,8 +50,6 @@ export const render = async (req: ExpressRequest) => {
   if (typeof fetchData === 'function') {
     try {
       await fetchData({
-        dispatch: store.dispatch,
-        state: store.getState(),
         ctx: createContext(req),
         params: lastMatch.params,
       })
@@ -67,9 +60,9 @@ export const render = async (req: ExpressRequest) => {
     }
   }
 
-  store.dispatch(
-    setPageHasBeenInitializedOnServer(pageHasBeenInitializedOnServer)
-  )
+  useSsrStore
+    .getState()
+    .setPageHasBeenInitializedOnServer(pageHasBeenInitializedOnServer)
 
   const router = createStaticRouter(dataRoutes, context)
   const sheet = new ServerStyleSheet()
@@ -79,9 +72,7 @@ export const render = async (req: ExpressRequest) => {
     const html = ReactDOM.renderToString(
       sheet.collectStyles(
         <HelmetProvider context={helmetContext}>
-          <Provider store={store}>
-            <StaticRouterProvider router={router} context={context} />
-          </Provider>
+          <StaticRouterProvider router={router} context={context} />
         </HelmetProvider>
       )
     )
@@ -96,7 +87,7 @@ export const render = async (req: ExpressRequest) => {
       html,
       helmet,
       styleTags,
-      initialState: store.getState(),
+      initialState: getAppInitialState(),
     }
   } finally {
     sheet.seal()

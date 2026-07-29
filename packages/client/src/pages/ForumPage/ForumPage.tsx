@@ -1,9 +1,7 @@
 import { Helmet } from 'react-helmet-async'
-import { useSelector } from '../../store'
 import { Header } from '../../components/Header/Header'
-import { fetchForumThunk, selectForum } from '../../slices/forumSlice'
-import { PageInitArgs } from '../../types'
 import { usePage } from '../../hooks/usePage'
+import { useForumStore } from '../../stores/forumStore'
 import {
   Container,
   Heading,
@@ -42,11 +40,10 @@ const dateFormatterSpecial = (datePlain: datePlain) => {
 }
 
 export const ForumPage = () => {
-  // хук инициализации
   usePage({ initPage: initForumPage })
 
-  const topics = useSelector(selectForum) ?? []
-  const isLoading = useSelector(state => state.forum.isLoading)
+  const topics = useForumStore(s => s.topics) ?? []
+  const isLoading = useForumStore(s => s.isLoading)
   const navigate = useNavigate()
 
   const [searchParams] = useSearchParams()
@@ -119,13 +116,6 @@ export const ForumPage = () => {
   )
 }
 
-export const initForumPage = async ({ dispatch, state }: PageInitArgs) => {
-  const topics = selectForum(state)
-
-  // Если данные уже есть в сторе, не фетчим снова
-  if (topics) {
-    return
-  }
-
-  return dispatch(fetchForumThunk())
+export const initForumPage = async () => {
+  return useForumStore.getState().loadForum()
 }
