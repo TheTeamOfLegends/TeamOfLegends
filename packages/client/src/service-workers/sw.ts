@@ -70,8 +70,8 @@ swSelf.addEventListener('activate', event => {
 // перехватываем все fetch запросы
 // у нас будут два сценария:
 // 1. статика и навигация всегда отдаются через кеш
-// 2. данамические данные (содержимое лидерборда, топиков форума) выдаем из кеша,
-//    но далее все равно делаем запрос на сервер за обновленными данными
+// 2. данамические данные (содержимое лидерборда, топиков форума) - делаем запрос в сеть,
+//    при ошибке выдаем из кеша
 swSelf.addEventListener('fetch', event => {
   // запрашивалась статика или нет
   const isRequestAboutStaticData =
@@ -125,20 +125,18 @@ swSelf.addEventListener('fetch', event => {
         return fetch(event.request)
       }
 
-      // исключение: если запрашивается авторизация, не берем из кеша и не кешируем!
+      // исключение: если запрашивается авторизация, не берем из кеша и не кешируем
       if (event.request.url.includes('/v2/auth/user')) {
         return fetch(event.request).catch(() => serviceUnavailable())
       }
 
-      // ищем данные в кеше
-      const cacheResponse = await caches.match(event.request)
-
       if (isOffLine) {
+        const cacheResponse = await caches.match(event.request)
         return cacheResponse || serviceUnavailable()
       }
 
       // асинхронный фоновый запрос на запрос к серверу и обновление кеша
-      const updateCachePromise = fetch(event.request)
+      const response = await fetch(event.request)
         .then(response => {
           // Если сервер ответил ошибкой, не кэшируем её, а просто отдаем
           if (badResponse(response)) {
@@ -150,11 +148,12 @@ swSelf.addEventListener('fetch', event => {
             .then(cache => cache.put(event.request, response.clone()))
             .then(() => response)
         })
-        .catch(() => serviceUnavailable())
+        .catch(async () => {
+          const cacheResponse = await caches.match(event.request)
+          return cacheResponse || serviceUnavailable()
+        })
 
-      event.waitUntil(updateCachePromise)
-
-      return cacheResponse || updateCachePromise
+      return response
     })()
   )
 })
