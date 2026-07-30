@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet'
+import { Helmet } from 'react-helmet-async'
 import { Box, Flex } from '@chakra-ui/react'
 import { useLocation } from 'react-router-dom'
 import { Header } from '../../components/Header/Header'
