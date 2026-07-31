@@ -2,21 +2,18 @@ import { Helmet } from 'react-helmet-async'
 import { Header } from '../../components/Header/Header'
 import { useSearchParams } from 'react-router-dom'
 import { PageInitArgs } from '../../types'
-import {
-  fetchForumTopicThunk,
-  selectForumActiveTopic,
-} from '../../slices/forumTopicSlice'
 import { Container, VStack, Flex, Text } from '@chakra-ui/react'
-import { useSelector } from 'react-redux'
 import { usePage } from '../../hooks/usePage'
 import {
   ForumTopicCard,
   ForumTopicCardBody,
 } from '../../components/ForumTopicCard/ForumTopicCard'
 import { StarPagination } from '../../components/StarPagination/StarPagination'
-import { ForumComment } from '../../slices/forumTopicSlice'
+import { ForumComment } from '../../types/forum'
 import { ReactNode } from 'react'
 import { CommentForm } from '../../components/CommentForm/CommentForm'
+import { useForumTopicStore } from '../../stores/forumTopicStore'
+import { useProfileStore } from '../../stores/profileStore'
 
 interface ContainerProps {
   title: string
@@ -49,18 +46,17 @@ const ForumTopicContainer = (props: ContainerProps) => {
 }
 
 export const ForumTopicPage = () => {
-  // хук инициализации
   usePage({ initPage: initForumTopicPage })
 
   const [searchParams] = useSearchParams()
   const pageNumber = Number(searchParams.get('page') ?? 1)
 
-  const activeTopic = useSelector(selectForumActiveTopic)
+  const topic = useForumTopicStore(s => s.topic)
+  const comments = useForumTopicStore(s => s.comments)
+  const isLoading = useForumTopicStore(s => s.isLoading)
+  const profileUser = useProfileStore(s => s.user)
 
-  // Сюда мы попадаем при:
-  // isLoading: true из initialState
-  // .pending установил isLoading: true
-  if (activeTopic.isLoading) {
+  if (isLoading) {
     return (
       <ForumTopicContainer title="page is loading">
         <Text>Загрузка...</Text>
@@ -68,17 +64,12 @@ export const ForumTopicPage = () => {
     )
   }
 
-  if (activeTopic.topic === null) {
+  if (topic === null) {
     throw new Error('Не удалось загрузить данные')
   }
 
-  const { topic, comments } = activeTopic
-
-  // comments + 1st topic
   const itemsLength = comments.length + 1
   const ITEMS_PER_PAGE = 10
-  // затык в том, что на первой странице мы отображаем (n - 1) комментарий из-за топика
-  // на остальных страницах n
   let itemsToShow: ForumComment[]
   if (pageNumber === 1) {
     itemsToShow = comments.slice(0, ITEMS_PER_PAGE - 1)
@@ -88,6 +79,11 @@ export const ForumTopicPage = () => {
       itemsSliceStart,
       itemsSliceStart + ITEMS_PER_PAGE
     )
+  }
+
+  const commentAuthor = {
+    name: profileUser?.first_name || profileUser?.login || 'User',
+    secondName: profileUser?.second_name || '',
   }
 
   return (
@@ -103,10 +99,7 @@ export const ForumTopicPage = () => {
             <ForumTopicCardBody {...comment} />
           </ForumTopicCard>
         ))}
-        <CommentForm
-          author={{ name: 'SomeCurrentUser', secondName: '' }}
-          topicId={topic.id}
-        />
+        <CommentForm author={commentAuthor} topicId={topic.id} />
         {itemsLength > ITEMS_PER_PAGE && (
           <Flex alignSelf={'center'}>
             <StarPagination
@@ -121,23 +114,12 @@ export const ForumTopicPage = () => {
   )
 }
 
-export const initForumTopicPage = async ({
-  dispatch,
-  state,
-  params,
-}: PageInitArgs) => {
+export const initForumTopicPage = async ({ params }: PageInitArgs) => {
   const topicId = params.topicId
 
   if (!topicId) {
     return
   }
 
-  const activeTopic = selectForumActiveTopic(state)
-
-  // Если данные уже есть в сторе, не фетчим снова
-  if (activeTopic.topic && activeTopic.topic.id === Number(topicId)) {
-    return
-  }
-
-  return dispatch(fetchForumTopicThunk(Number(topicId)))
+  return useForumTopicStore.getState().loadTopic(Number(topicId))
 }

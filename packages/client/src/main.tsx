@@ -1,13 +1,17 @@
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { HelmetProvider } from 'react-helmet-async'
-import { Provider } from 'react-redux'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { store } from './store'
+import { hydrateStores } from './stores/hydrate'
+
 import { routes } from './routes'
 import registerSW from './service-workers/registerSW'
 
 registerSW() // init serviceWorkers
+
+hydrateStores(
+  typeof window === 'undefined' ? undefined : window.APP_INITIAL_STATE
+)
 
 const router = createBrowserRouter(routes)
 
@@ -15,9 +19,7 @@ ReactDOM.hydrateRoot(
   document.getElementById('root') as HTMLElement,
   <StrictMode>
     <HelmetProvider>
-      <Provider store={store}>
-        <RouterProvider router={router} />
-      </Provider>
+      <RouterProvider router={router} />
     </HelmetProvider>
   </StrictMode>
 )

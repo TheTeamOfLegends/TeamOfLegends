@@ -3,9 +3,11 @@ import { Link } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import { logout } from '@/api/profileApi'
 import { toaster } from '@/components/ui/toaster'
+import { useProfileStore } from '@/stores/profileStore'
 
 export const LogoutLink = () => {
   const navigate = useNavigate()
+  const clearUser = useProfileStore(s => s.clearUser)
 
   const handleLogout = async () => {
     try {
@@ -19,6 +21,7 @@ export const LogoutLink = () => {
         type: 'error',
       })
     } finally {
+      clearUser()
       navigate('/sign-in', { replace: true })
     }
   }

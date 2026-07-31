@@ -1,11 +1,7 @@
 import { useEffect } from 'react'
-import { useDispatch, useSelector, useStore } from '../store'
-import {
-  setPageHasBeenInitializedOnServer,
-  selectPageHasBeenInitializedOnServer,
-} from '../slices/ssrSlice'
-import { PageInitArgs, PageInitContext } from '../types'
 import { useParams } from 'react-router-dom'
+import { PageInitArgs, PageInitContext } from '../types'
+import { useSsrStore } from '../stores/ssrStore'
 
 const getCookie = (name: string) => {
   const matches = document.cookie.match(
@@ -28,24 +24,28 @@ type PageProps = {
 }
 
 export const usePage = ({ initPage }: PageProps) => {
-  const dispatch = useDispatch()
-  const pageHasBeenInitializedOnServer = useSelector(
-    selectPageHasBeenInitializedOnServer
+  const pageHasBeenInitializedOnServer = useSsrStore(
+    s => s.pageHasBeenInitializedOnServer
   )
-  const store = useStore()
+  const setPageHasBeenInitializedOnServer = useSsrStore(
+    s => s.setPageHasBeenInitializedOnServer
+  )
   const params = useParams()
 
   useEffect(() => {
     if (pageHasBeenInitializedOnServer) {
-      dispatch(setPageHasBeenInitializedOnServer(false))
+      setPageHasBeenInitializedOnServer(false)
       return
     }
 
     initPage({
-      dispatch,
-      state: store.getState(),
       ctx: createContext(),
       params,
     })
-  }, [dispatch, pageHasBeenInitializedOnServer, initPage, params])
+  }, [
+    pageHasBeenInitializedOnServer,
+    setPageHasBeenInitializedOnServer,
+    initPage,
+    params,
+  ])
 }

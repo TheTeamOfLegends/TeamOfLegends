@@ -17,6 +17,7 @@ import { useForm } from 'react-hook-form'
 import { LuEye, LuEyeOff } from 'react-icons/lu'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { toaster } from '../../components/ui/toaster'
+import { useProfileStore } from '@/stores/profileStore'
 
 const DEFAULT_VALUES: SignUpFormValues = {
   first_name: '',
@@ -30,6 +31,7 @@ const DEFAULT_VALUES: SignUpFormValues = {
 export const SignUpPage: React.FC = () => {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
+  const loadProfile = useProfileStore(s => s.loadProfile)
 
   const {
     register,
@@ -44,6 +46,7 @@ export const SignUpPage: React.FC = () => {
   const onSubmit = async (data: SignUpFormValues) => {
     try {
       await authApi.signUp(data)
+      await loadProfile()
 
       toaster.create({
         description: 'Вы успешно зарегистрировались',
