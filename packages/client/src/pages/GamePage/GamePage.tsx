@@ -9,11 +9,14 @@ import {
   type GameOverPayload,
 } from '../../game/spaceAssaultGame'
 import { GameOverOverlay } from './GameOverOverlay'
+import { GameButton } from '@/components/ui/GameButton/GameButton'
 
 export const GamePage = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const controllerRef = useRef<GameController | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const [gameOver, setGameOver] = useState<GameOverPayload | null>(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -35,6 +38,32 @@ export const GamePage = () => {
     }
   }, [])
 
+  useEffect(() => {
+    document.addEventListener('fullscreenchange', onFullscreenChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', onFullscreenChange)
+    }
+  }, [])
+
+  const onFullscreenChange = () => {
+    setIsFullscreen(Boolean(document.fullscreenElement))
+  }
+
+  const handleToggleFullscreen = async () => {
+    const el = containerRef.current
+    if (!el) return
+
+    try {
+      if (!document.fullscreenElement) {
+        await el.requestFullscreen()
+      } else {
+        await document.exitFullscreen()
+      }
+    } catch (err) {
+      console.error('Fullscreen failed:', err)
+    }
+  }
+
   const handleRestart = () => {
     controllerRef.current?.restart()
     setGameOver(null)
@@ -49,6 +78,7 @@ export const GamePage = () => {
       </Helmet>
       <Header />
       <Box
+        ref={containerRef}
         flex="1"
         position="relative"
         display="flex"
@@ -56,6 +86,15 @@ export const GamePage = () => {
         alignItems="center"
         overflow="hidden"
         bg="#0a1a4d">
+        <GameButton
+          position="absolute"
+          top={3}
+          right={3}
+          zIndex={1}
+          size="sm"
+          onClick={handleToggleFullscreen}>
+          {isFullscreen ? 'Выйти из полного экрана' : 'Полный экран'}
+        </GameButton>
         <canvas
           ref={canvasRef}
           style={{
