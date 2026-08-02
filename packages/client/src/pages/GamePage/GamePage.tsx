@@ -9,6 +9,7 @@ import {
   type GameOverPayload,
 } from '../../game/spaceAssaultGame'
 import { GameOverOverlay } from './GameOverOverlay'
+import { GameStartOverlay } from './GameStartOverlay'
 import { GameButton } from '@/components/ui/GameButton/GameButton'
 
 export const GamePage = () => {
@@ -16,6 +17,7 @@ export const GamePage = () => {
   const controllerRef = useRef<GameController | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [gameOver, setGameOver] = useState<GameOverPayload | null>(null)
+  const [gameStart, setGameStart] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
@@ -62,6 +64,11 @@ export const GamePage = () => {
     } catch (err) {
       console.error('Fullscreen failed:', err)
     }
+  }
+
+  const handleStart = () => {
+    controllerRef.current?.restart()
+    setGameStart(false)
   }
 
   const handleRestart = () => {
@@ -112,6 +119,7 @@ export const GamePage = () => {
             onRestart={handleRestart}
           />
         )}
+        {gameStart && <GameStartOverlay onRestart={handleStart} />}
       </Box>
     </Box>
   )

@@ -111,7 +111,7 @@ export function startGame(
   let mouseX = 0
   let mouseY = 0
   let score = 0
-  let gameOver = false
+  let gameOver = true
 
   const particles = []
 
@@ -1448,7 +1448,12 @@ export function startGame(
     if (deltaTimeMs >= msPerFrame) {
       lastFrameTimeMs = currentTimeMs - (deltaTimeMs % msPerFrame) // Adjust lastFrameTimeMs for accuracy
 
-      if (gameOver) return
+      if (gameOver) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        drawBackground()
+
+        return
+      }
 
       updateDifficulty()
       updateEnemySpawning()
