@@ -23,6 +23,8 @@ export type GameController = {
   restart: () => void
   resume: () => void
   pause: () => void
+  /** When false, ESC/P do not toggle pause (e.g. start overlay). */
+  setPauseControlsEnabled: (enabled: boolean) => void
 }
 
 export type Vec2 = { x: number; y: number }

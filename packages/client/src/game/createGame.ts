@@ -16,6 +16,7 @@ import {
   updateEnemies,
 } from './combat'
 import { COMBAT, MS_PER_FRAME, PHYSICS } from './constants'
+import { loadGameAssets } from './gameAssets'
 import { drawParticles, updateParticles } from './particles'
 import {
   checkPlatformCollisions,
@@ -28,7 +29,6 @@ import {
   drawBullets,
   drawEnemies,
   drawEnemyIndicators,
-  drawGun,
   drawPlayer,
 } from './render'
 import { getHighScore, saveHighScore } from './scoreStorage'
@@ -80,6 +80,8 @@ export function startGame(
   canvas: HTMLCanvasElement,
   options: StartGameOptions = {}
 ): GameController {
+  loadGameAssets()
+
   const ctx = canvas.getContext('2d')
   if (!ctx) {
     return {
@@ -87,6 +89,7 @@ export function startGame(
       restart: () => undefined,
       pause: () => undefined,
       resume: () => undefined,
+      setPauseControlsEnabled: () => undefined,
     }
   }
 
@@ -96,6 +99,7 @@ export function startGame(
   let paused = false
   let pauseStartedAt = 0
   let totalPausedMs = 0
+  let pauseControlsEnabled = true
 
   const preventContextMenu = (event: Event) => event.preventDefault()
   document.addEventListener('contextmenu', preventContextMenu)
@@ -250,8 +254,7 @@ export function startGame(
     drawBackground(ctx, starryNight, canvas.width, canvas.height)
     drawPlatforms(ctx, platforms)
     drawParticles(ctx, particles)
-    drawPlayer(ctx, player)
-    drawGun(ctx, player, mouseX, mouseY)
+    drawPlayer(ctx, player, mouseX, mouseY)
     drawEnemies(ctx, enemies)
     drawBullets(ctx, bullets)
     drawBonuses(ctx, bonuses)
@@ -383,9 +386,9 @@ export function startGame(
   const onKeyDown = (event: KeyboardEvent) => {
     const key = event.key.toUpperCase()
 
-    if (key === 'ESCAPE') {
+    if (key === 'ESCAPE' || key === 'P' || key === 'З') {
       event.preventDefault()
-      if (!gameOver) setPaused(!paused)
+      if (!gameOver && pauseControlsEnabled) setPaused(!paused)
       return
     }
 
@@ -460,6 +463,9 @@ export function startGame(
     },
     pause: () => setPaused(true),
     resume: () => setPaused(false),
+    setPauseControlsEnabled: (enabled: boolean) => {
+      pauseControlsEnabled = enabled
+    },
     stop: () => {
       destroyed = true
       cancelAnimationFrame(rafId)

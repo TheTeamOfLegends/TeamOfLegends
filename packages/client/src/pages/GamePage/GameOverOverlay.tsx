@@ -98,6 +98,8 @@ export const GameOverOverlay = ({
           fontSize={{ base: 'xs', sm: 'sm' }}
           lineHeight="1.5">
           A / W / D — движение, мышь — прицел и выстрел
+          <br />
+          ESC / P — пауза
         </Text>
       </Box>
     </Flex>

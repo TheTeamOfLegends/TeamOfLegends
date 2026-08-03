@@ -119,6 +119,15 @@ export const GameHud = ({ hud }: GameHudProps) => {
           />
         )}
       </Box>
+
+      <Text
+        mt={3}
+        fontFamily="Orbitron, sans-serif"
+        fontSize="10px"
+        letterSpacing="0.06em"
+        color="whiteAlpha.500">
+        ESC / P — пауза
+      </Text>
     </Box>
   )
 }

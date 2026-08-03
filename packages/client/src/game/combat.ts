@@ -284,9 +284,9 @@ export const updateEnemies = (
     enemy.y += (dy / distance) * enemy.speed * speedFactor
     enemy.radius = 10 + 10 * Math.min(enemy.lifetime / 1000, 0.5)
 
-    const rotationSpeed = enemy.speed * 0.02 * speedFactor
-    enemy.rotation +=
-      enemy.rotation_direction > 0 ? rotationSpeed : -rotationSpeed
+    const targetRotation = Math.atan2(dy, dx)
+
+    enemy.rotation += (targetRotation - enemy.rotation) * 0.08
 
     if (distance < player.radius + enemy.radius) {
       player.currentHp -= 10
@@ -319,6 +319,8 @@ export const updateBullets = (
     const bullet = bullets[i]
     bullet.x += bullet.velocityX
     bullet.y += bullet.velocityY
+
+    particles.push(createParticle(bullet.x, bullet.y, '#ffd84d', 'spark'))
 
     if (bullet.x < 0 || bullet.x > width || bullet.y < 0 || bullet.y > height) {
       bullets.splice(i, 1)
@@ -423,7 +425,7 @@ export const updateBonuses = (
           'spark'
         )
       )
-      bonus.nextSparkle = now + 100
+      bonus.nextSparkle = now + 50
     }
 
     if (distance < player.radius + bonus.radius) {

@@ -44,7 +44,7 @@ export const PauseOverlay = ({ onResume }: PauseOverlayProps) => {
           fontSize={{ base: 'sm', sm: 'md' }}
           mb={{ base: 6, sm: 8 }}
           lineHeight="1.5">
-          Игра на паузе. Нажмите ESC или кнопку ниже, чтобы продолжить.
+          Игра на паузе. Нажмите ESC, P или кнопку ниже, чтобы продолжить.
         </Text>
 
         <Stack gap={3} align="stretch">
@@ -71,7 +71,7 @@ export const PauseOverlay = ({ onResume }: PauseOverlayProps) => {
           color="whiteAlpha.600"
           fontSize={{ base: 'xs', sm: 'sm' }}
           lineHeight="1.5">
-          ESC — пауза / продолжить
+          ESC / P — пауза / продолжить
         </Text>
       </Box>
     </Flex>

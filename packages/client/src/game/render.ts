@@ -1,77 +1,46 @@
+import { gameAssets } from './gameAssets'
 import { ENEMY_INDICATOR } from './constants'
 import { getIndicatorPosition } from './combat'
 import type { Bonus, Bullet, Enemy, Player } from './types'
 
 export const drawPlayer = (
   ctx: CanvasRenderingContext2D,
-  player: Player
-): void => {
-  ctx.save()
-  ctx.translate(player.x, player.y)
-
-  ctx.beginPath()
-  ctx.arc(0, 0, player.radius + 5, 0, Math.PI * 2)
-  ctx.strokeStyle = `rgba(100, 200, 255, ${
-    (player.currentHp / player.maxHp) * 0.5
-  })`
-  ctx.lineWidth = 2
-  ctx.stroke()
-
-  ctx.beginPath()
-  ctx.arc(0, 0, player.radius * 0.9, 0, Math.PI * 2)
-  ctx.fillStyle = '#6666ff'
-  ctx.fill()
-
-  ctx.restore()
-}
-
-export const drawGun = (
-  ctx: CanvasRenderingContext2D,
   player: Player,
   mouseX: number,
   mouseY: number
 ): void => {
-  const gunLength = 20
+  if (!gameAssets.player) {
+    return
+  }
+
   const dx = mouseX - player.x
   const dy = mouseY - player.y
   const angle = Math.atan2(dy, dx)
+  const size = player.radius * 5
 
-  ctx.beginPath()
-  ctx.moveTo(player.x, player.y)
-  ctx.lineTo(
-    player.x + Math.cos(angle) * gunLength,
-    player.y + Math.sin(angle) * gunLength
-  )
-  ctx.strokeStyle = 'black'
-  ctx.lineWidth = 3
-  ctx.stroke()
-  ctx.closePath()
+  ctx.save()
+  ctx.translate(player.x, player.y)
+  ctx.rotate(angle + Math.PI / 2)
+  ctx.drawImage(gameAssets.player, -size / 2, -size / 2, size, size)
+  ctx.restore()
 }
 
 export const drawEnemies = (
   ctx: CanvasRenderingContext2D,
   enemies: Enemy[]
 ): void => {
-  enemies.forEach(enemy => {
+  if (!gameAssets.enemy) {
+    return
+  }
+
+  enemies.forEach((enemy, index) => {
+    const size = enemy.radius * 3
+    const wobble = Math.sin(performance.now() * 0.008 + index) * 0.04
+
     ctx.save()
     ctx.translate(enemy.x, enemy.y)
-    ctx.rotate(enemy.rotation)
-
-    ctx.beginPath()
-    const spikes = 8
-    for (let i = 0; i <= spikes * 2 + 1; i++) {
-      const radius = i % 2 === 0 ? enemy.radius : enemy.radius * 0.6
-      const angle = (i / spikes) * Math.PI
-      const x = Math.cos(angle) * radius
-      const y = Math.sin(angle) * radius
-      if (i === 0) ctx.moveTo(x, y)
-      else ctx.lineTo(x, y)
-    }
-    ctx.fillStyle = '#edd7ffff'
-    ctx.fill()
-    ctx.strokeStyle = '#b98cbbff'
-    ctx.stroke()
-
+    ctx.rotate(enemy.rotation + wobble + Math.PI / 2)
+    ctx.drawImage(gameAssets.enemy, -size / 2, -size / 2, size, size)
     ctx.restore()
   })
 }
@@ -118,16 +87,36 @@ export const drawBullets = (
   bullets: Bullet[]
 ): void => {
   bullets.forEach(bullet => {
+    const alpha =
+      bullet.lifetime != null ? Math.min(bullet.lifetime / 10, 1) : 1
+
+    const glow = ctx.createRadialGradient(
+      bullet.x,
+      bullet.y,
+      0,
+      bullet.x,
+      bullet.y,
+      bullet.radius * 4
+    )
+
+    glow.addColorStop(0, `rgba(255,255,220,${alpha})`)
+    glow.addColorStop(0.4, `rgba(255,220,80,${alpha * 0.8})`)
+    glow.addColorStop(1, 'rgba(255,220,0,0)')
+
+    ctx.beginPath()
+    ctx.arc(bullet.x, bullet.y, bullet.radius * 2, 0, Math.PI * 2)
+    ctx.fillStyle = glow
+    ctx.fill()
+
     ctx.beginPath()
     ctx.arc(bullet.x, bullet.y, bullet.radius, 0, Math.PI * 2)
-    if (bullet.lifetime != null) {
-      const intensity = 255 * Math.min(bullet.lifetime / 10, 1)
-      ctx.fillStyle = `rgb(${intensity},${intensity}, 0)`
-    } else {
-      ctx.fillStyle = 'yellow'
-    }
+    ctx.fillStyle = '#fff7c0'
     ctx.fill()
-    ctx.closePath()
+
+    ctx.beginPath()
+    ctx.arc(bullet.x, bullet.y, bullet.radius * 0.35, 0, Math.PI * 2)
+    ctx.fillStyle = '#ffffff'
+    ctx.fill()
   })
 }
 
@@ -135,41 +124,70 @@ export const drawBonuses = (
   ctx: CanvasRenderingContext2D,
   bonuses: Bonus[]
 ): void => {
-  const now = Date.now()
-  bonuses.forEach(bonus => {
+  const now = performance.now()
+
+  bonuses.forEach((bonus, index) => {
+    const pulse = 1 + Math.sin(now * 0.005 + index) * 0.08
+
+    const image =
+      bonus.type === 'health'
+        ? gameAssets.health
+        : bonus.type === 'machineGun'
+        ? gameAssets.machineGun
+        : gameAssets.shotgun
+
+    if (!image) {
+      return
+    }
+
+    const glowColor =
+      bonus.type === 'health'
+        ? 'rgba(0,255,120,0.35)'
+        : bonus.type === 'machineGun'
+        ? 'rgba(255,220,0,0.35)'
+        : 'rgba(140,100,255,0.35)'
+
     const gradient = ctx.createRadialGradient(
       bonus.x,
       bonus.y,
-      bonus.radius * 0.5,
+      bonus.radius * 0.3,
       bonus.x,
       bonus.y,
       bonus.radius * 2
     )
-    if (bonus.type !== 'shotgun') {
-      gradient.addColorStop(
-        0,
-        bonus.type === 'health'
-          ? 'rgba(0, 255, 0, 0.3)'
-          : 'rgba(255, 255, 0, 0.3)'
-      )
-    } else {
-      gradient.addColorStop(0, 'rgba(135, 80, 255, 0.3)')
-    }
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
+
+    gradient.addColorStop(0, glowColor)
+    gradient.addColorStop(1, 'rgba(0,0,0,0)')
 
     ctx.beginPath()
     ctx.arc(bonus.x, bonus.y, bonus.radius * 2, 0, Math.PI * 2)
     ctx.fillStyle = gradient
     ctx.fill()
 
-    const pulse = Math.sin(now * 0.01) * 0.2 + 0.8
-    ctx.beginPath()
-    ctx.arc(bonus.x, bonus.y, bonus.radius * pulse, 0, Math.PI * 2)
-    ctx.fillStyle = bonus.color
-    ctx.fill()
+    ctx.save()
+    ctx.translate(bonus.x, bonus.y)
+    ctx.translate(0, Math.sin(now * 0.003 + index) * 2)
 
-    ctx.fillStyle = 'black'
-    ctx.font = 'bold 12px Arial'
-    ctx.textAlign = 'left'
+    if (bonus.type === 'machineGun') {
+      ctx.rotate(now * 0.001)
+    }
+
+    const sizeMultiplier = bonus.type === 'health' ? 2.0 : 2.4
+    const maxSize = bonus.radius * sizeMultiplier * pulse
+    const aspect = image.width / image.height || 1
+
+    let width: number
+    let height: number
+
+    if (aspect >= 1) {
+      width = maxSize
+      height = maxSize / aspect
+    } else {
+      height = maxSize
+      width = maxSize * aspect
+    }
+
+    ctx.drawImage(image, -width / 2, -height / 2, width, height)
+    ctx.restore()
   })
 }
