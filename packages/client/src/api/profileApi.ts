@@ -67,6 +67,10 @@ export const logout = async () => {
     method: 'POST',
   })
 
+  if (navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' })
+  }
+
   if (!response.ok) {
     const responseBody = await response.json()
 

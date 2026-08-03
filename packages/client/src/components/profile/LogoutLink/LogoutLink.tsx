@@ -12,9 +12,6 @@ export const LogoutLink = () => {
   const handleLogout = async () => {
     try {
       await logout()
-      clearUser()
-
-      navigate('/sign-in', { replace: true })
     } catch (error) {
       toaster.create({
         description:
@@ -23,6 +20,9 @@ export const LogoutLink = () => {
             : ERROR_MESSAGES.REQUEST_FAILED,
         type: 'error',
       })
+    } finally {
+      clearUser()
+      navigate('/sign-in', { replace: true })
     }
   }
 

@@ -214,7 +214,6 @@ export const routes = [
       },
       // Все остальные страницы добавляйте сюда:
       // { path: 'dashboard', Component: DashboardPage }
-
     ],
   },
 ]

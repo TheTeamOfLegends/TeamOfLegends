@@ -5,6 +5,9 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { hydrateStores } from './stores/hydrate'
 
 import { routes } from './routes'
+import registerSW from './service-workers/registerSW'
+
+registerSW() // init serviceWorkers
 
 hydrateStores(
   typeof window === 'undefined' ? undefined : window.APP_INITIAL_STATE
