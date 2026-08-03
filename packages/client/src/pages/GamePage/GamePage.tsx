@@ -3,20 +3,33 @@ import { Helmet } from 'react-helmet-async'
 import { Box } from '@chakra-ui/react'
 
 import { Header } from '../../components/Header/Header'
+import { GameButton } from '@/components/ui/GameButton/GameButton'
 import {
   startGame,
   type GameController,
+  type GameHudState,
   type GameOverPayload,
 } from '../../game/spaceAssaultGame'
+import { GameHud } from './GameHud'
 import { GameOverOverlay } from './GameOverOverlay'
 import { GameStartOverlay } from './GameStartOverlay'
-import { GameButton } from '@/components/ui/GameButton/GameButton'
+import { PauseOverlay } from './PauseOverlay'
+
+const INITIAL_HUD: GameHudState = {
+  score: 0,
+  hp: 100,
+  maxHp: 100,
+  machineGunRemainingMs: 0,
+  shotgunRemainingMs: 0,
+}
 
 export const GamePage = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const controllerRef = useRef<GameController | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [gameOver, setGameOver] = useState<GameOverPayload | null>(null)
+  const [paused, setPaused] = useState(false)
+  const [hud, setHud] = useState<GameHudState>(INITIAL_HUD)
   const [gameStart, setGameStart] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
@@ -29,9 +42,19 @@ export const GamePage = () => {
     const controller = startGame(canvas, {
       onGameOver: payload => {
         setGameOver(payload)
+        setPaused(false)
+      },
+      onHudUpdate: nextHud => {
+        setHud(nextHud)
+      },
+      onPauseChange: isPaused => {
+        setPaused(isPaused)
       },
     })
 
+    // Freeze gameplay under the start overlay (same as PauseOverlay).
+    controller.setPauseControlsEnabled(false)
+    controller.pause()
     controllerRef.current = controller
 
     return () => {
@@ -41,15 +64,15 @@ export const GamePage = () => {
   }, [])
 
   useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement))
+    }
+
     document.addEventListener('fullscreenchange', onFullscreenChange)
     return () => {
       document.removeEventListener('fullscreenchange', onFullscreenChange)
     }
   }, [])
-
-  const onFullscreenChange = () => {
-    setIsFullscreen(Boolean(document.fullscreenElement))
-  }
 
   const handleToggleFullscreen = async () => {
     const el = containerRef.current
@@ -67,13 +90,24 @@ export const GamePage = () => {
   }
 
   const handleStart = () => {
-    controllerRef.current?.restart()
+    const controller = controllerRef.current
+    if (!controller) return
+
+    controller.setPauseControlsEnabled(true)
+    controller.restart()
     setGameStart(false)
+    setPaused(false)
   }
 
   const handleRestart = () => {
     controllerRef.current?.restart()
     setGameOver(null)
+    setPaused(false)
+    setHud(INITIAL_HUD)
+  }
+
+  const handleResume = () => {
+    controllerRef.current?.resume()
   }
 
   return (
@@ -111,6 +145,10 @@ export const GamePage = () => {
             backgroundColor: '#1a1a1a',
           }}
         />
+        {!gameOver && !gameStart && <GameHud hud={hud} />}
+        {paused && !gameOver && !gameStart && (
+          <PauseOverlay onResume={handleResume} />
+        )}
         {gameOver && (
           <GameOverOverlay
             score={gameOver.score}

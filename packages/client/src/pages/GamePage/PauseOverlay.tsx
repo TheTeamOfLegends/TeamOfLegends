@@ -2,19 +2,11 @@ import { Box, Flex, Heading, Text, Stack } from '@chakra-ui/react'
 import { Link } from 'react-router-dom'
 import { GameButton } from '../../components/ui/GameButton/GameButton'
 
-export type GameOverOverlayProps = {
-  score: number
-  highScore: number
-  isNewHighScore: boolean
-  onRestart: () => void
+export type PauseOverlayProps = {
+  onResume: () => void
 }
 
-export const GameOverOverlay = ({
-  score,
-  highScore,
-  isNewHighScore,
-  onRestart,
-}: GameOverOverlayProps) => {
+export const PauseOverlay = ({ onResume }: PauseOverlayProps) => {
   return (
     <Flex
       position="absolute"
@@ -43,39 +35,21 @@ export const GameOverOverlay = ({
           fontSize={{ base: '28px', sm: '36px' }}
           color="#EB4B76"
           letterSpacing="0.04em"
-          mb={{ base: 4, sm: 6 }}>
-          Game Over
+          mb={{ base: 3, sm: 4 }}>
+          Пауза
         </Heading>
 
-        {isNewHighScore && (
-          <Text
-            fontFamily="Orbitron, sans-serif"
-            color="#FFBF00"
-            fontSize={{ base: '14px', sm: '16px' }}
-            mb={4}
-            letterSpacing="0.06em">
-            Новый рекорд!
-          </Text>
-        )}
-
-        <Stack gap={2} mb={{ base: 6, sm: 8 }}>
-          <Text color="white" fontSize={{ base: 'md', sm: 'lg' }}>
-            Счёт:{' '}
-            <Box as="span" color="#EB4B76" fontWeight="700">
-              {score.toLocaleString('ru-RU')}
-            </Box>
-          </Text>
-          <Text color="whiteAlpha.800" fontSize={{ base: 'sm', sm: 'md' }}>
-            Лучший результат:{' '}
-            <Box as="span" color="white" fontWeight="600">
-              {highScore.toLocaleString('ru-RU')}
-            </Box>
-          </Text>
-        </Stack>
+        <Text
+          color="whiteAlpha.800"
+          fontSize={{ base: 'sm', sm: 'md' }}
+          mb={{ base: 6, sm: 8 }}
+          lineHeight="1.5">
+          Игра на паузе. Нажмите ESC, P или кнопку ниже, чтобы продолжить.
+        </Text>
 
         <Stack gap={3} align="stretch">
-          <GameButton size="lg" w="100%" onClick={onRestart}>
-            Играть снова
+          <GameButton size="lg" w="100%" onClick={onResume}>
+            Продолжить
           </GameButton>
           <GameButton
             asChild
@@ -88,7 +62,7 @@ export const GameOverOverlay = ({
             _hover={{
               bg: 'rgba(235, 75, 118, 0.15)',
             }}>
-            <Link to="/leaderboard">Таблица лидеров</Link>
+            <Link to="/">В меню</Link>
           </GameButton>
         </Stack>
 
@@ -97,9 +71,7 @@ export const GameOverOverlay = ({
           color="whiteAlpha.600"
           fontSize={{ base: 'xs', sm: 'sm' }}
           lineHeight="1.5">
-          A / W / D — движение, мышь — прицел и выстрел
-          <br />
-          ESC / P — пауза
+          ESC / P — пауза / продолжить
         </Text>
       </Box>
     </Flex>

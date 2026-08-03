@@ -14,6 +14,7 @@ export const GameStartOverlay = ({ onRestart }: GameStartOverlayProps) => {
       justify="center"
       px={{ base: 4, sm: 6 }}
       py={{ base: 6, sm: 8 }}
+      bg="rgba(8, 11, 44, 0.82)"
       backdropFilter="blur(6px)"
       zIndex={2}>
       <Box
@@ -49,6 +50,8 @@ export const GameStartOverlay = ({ onRestart }: GameStartOverlayProps) => {
           fontSize={{ base: 'xs', sm: 'sm' }}
           lineHeight="1.5">
           A / W / D — движение, мышь — прицел и выстрел
+          <br />
+          ESC / P — пауза
         </Text>
       </Box>
     </Flex>
