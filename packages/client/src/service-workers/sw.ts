@@ -125,9 +125,27 @@ swSelf.addEventListener('fetch', event => {
         return fetch(event.request)
       }
 
-      // исключение: если запрашивается авторизация, не берем из кеша и не кешируем
+      // Авторизация: network-first. В офлайне отдаём последний успешный ответ из кеша,
+      // чтобы AuthGuard не считал пользователя разлогиненным при падении сети.
       if (event.request.url.includes('/v2/auth/user')) {
-        return fetch(event.request).catch(() => serviceUnavailable())
+        if (isOffLine) {
+          const cacheResponse = await caches.match(event.request)
+          return cacheResponse || serviceUnavailable()
+        }
+
+        try {
+          const response = await fetch(event.request)
+
+          if (response.ok) {
+            const cache = await caches.open(CACHE_NAME)
+            await cache.put(event.request, response.clone())
+          }
+
+          return response
+        } catch {
+          const cacheResponse = await caches.match(event.request)
+          return cacheResponse || serviceUnavailable()
+        }
       }
 
       if (isOffLine) {
