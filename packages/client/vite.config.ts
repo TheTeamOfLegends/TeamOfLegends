@@ -32,6 +32,8 @@ export default defineConfig({
     svgr(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Регистрация вручную в registerSW.ts — не инжектить второй скрипт
+      injectRegister: false,
       strategies: 'injectManifest',
       srcDir: 'src/service-workers',
       filename: 'sw.ts',
@@ -59,6 +61,9 @@ export default defineConfig({
             type: 'image/png',
           },
         ],
+      },
+      devOptions: {
+        enabled: false,
       },
     }),
   ],

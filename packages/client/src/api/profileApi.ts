@@ -1,14 +1,39 @@
 import { API_BASE_URL } from '@/constants'
 import { ERROR_MESSAGES } from '@/dictionary'
+import { clearAuthSession } from './authSession'
+
+/** Сеть недоступна или service worker вернул 503 — не путать с «не авторизован». */
+export class NetworkError extends Error {
+  constructor(message = 'Network unavailable') {
+    super(message)
+    this.name = 'NetworkError'
+  }
+}
 
 export const getProfile = async () => {
-  const response = await fetch(`${API_BASE_URL}/v2/auth/user`, {
-    credentials: 'include',
-  })
+  let response: Response
+
+  try {
+    response = await fetch(`${API_BASE_URL}/v2/auth/user`, {
+      credentials: 'include',
+    })
+  } catch {
+    throw new NetworkError()
+  }
+
+  if (response.status === 503) {
+    throw new NetworkError()
+  }
 
   if (!response.ok) {
-    const body = await response.json()
-    throw new Error(body.reason)
+    let reason = ERROR_MESSAGES.REQUEST_FAILED
+    try {
+      const body = await response.json()
+      reason = body.reason ?? reason
+    } catch {
+      // ignore non-JSON body
+    }
+    throw new Error(reason)
   }
 
   const user = await response.json()
@@ -62,18 +87,27 @@ export const updateAvatar = async (avatar: File) => {
 }
 
 export const logout = async () => {
-  const response = await fetch(`${API_BASE_URL}/v2/auth/logout`, {
-    credentials: 'include',
-    method: 'POST',
-  })
+  clearAuthSession()
 
   if (navigator.serviceWorker.controller) {
     navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' })
   }
 
-  if (!response.ok) {
-    const responseBody = await response.json()
+  let response: Response
 
-    throw new Error(responseBody.reason ?? ERROR_MESSAGES.REQUEST_FAILED)
+  try {
+    response = await fetch(`${API_BASE_URL}/v2/auth/logout`, {
+      credentials: 'include',
+      method: 'POST',
+    })
+  } catch {
+    // Офлайн-выход: локальная сессия уже очищена
+    return
+  }
+
+  if (!response.ok) {
+    const responseBody = await response.json().catch(() => null)
+
+    throw new Error(responseBody?.reason ?? ERROR_MESSAGES.REQUEST_FAILED)
   }
 }

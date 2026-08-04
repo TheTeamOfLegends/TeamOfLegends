@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 import * as profileApi from '@/api/profileApi'
+import { clearAuthSession, saveAuthSession } from '@/api/authSession'
 import { User } from '../types/user'
 
 interface ProfileState {
@@ -17,10 +18,14 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   isLoading: false,
 
   setUser(user) {
+    if (user) {
+      saveAuthSession(user)
+    }
     set({ user, isLoading: false })
   },
 
   clearUser() {
+    clearAuthSession()
     set({ user: null, isLoading: false })
   },
 
@@ -34,9 +39,18 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
     try {
       const user = await profileApi.getProfile()
+      saveAuthSession(user)
       set({ user, isLoading: false })
       return user
     } catch (e) {
+      if (e instanceof profileApi.NetworkError) {
+        const cached = get().user
+        if (cached) {
+          set({ isLoading: false })
+          return cached
+        }
+      }
+      clearAuthSession()
       set({ user: null, isLoading: false })
       throw e
     }
@@ -44,6 +58,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
   async updateAvatar(file) {
     const user = await profileApi.updateAvatar(file)
+    saveAuthSession(user)
     set({ user })
   },
 }))

@@ -15,6 +15,18 @@ hydrateStores(
 
 const router = createBrowserRouter(routes)
 
+/**
+ * Ловит ошибки вне дерева роутера (провайдеры и т.п.).
+ * Внутри RouterProvider сработают ErrorBoundary / errorElement → /500.
+ */
+window.addEventListener('error', event => {
+  console.error('Неперехваченная ошибка:', event.error ?? event.message)
+})
+
+window.addEventListener('unhandledrejection', event => {
+  console.error('Необработанный Promise rejection:', event.reason)
+})
+
 ReactDOM.hydrateRoot(
   document.getElementById('root') as HTMLElement,
   <StrictMode>

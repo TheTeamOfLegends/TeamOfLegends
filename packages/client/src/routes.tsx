@@ -6,7 +6,7 @@ import {
 } from '@chakra-ui/react'
 import { GlobalStyles } from './theme/GlobalStyles'
 import { useEffect, useState } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { AppSpinner } from './components/ui/loader/app-spinner'
 import { Toaster } from './components/ui/toaster'
 import { checkAuth } from './api/auth'
@@ -17,6 +17,7 @@ import { NotFoundPage } from './pages/NotFound'
 import { InternalServerErrorPage } from './pages/InternalServerError'
 import { WithErrorPage } from './pages/WithError'
 import { RouteError } from './components/Error/RouteError/RouteError'
+import { ErrorBoundary } from './components/Error/ErrorBoundary/ErrorBoundary'
 import { SignInPage } from './pages/SignInPage/SignInPage'
 import {
   ForumNewTopicPage,
@@ -40,11 +41,16 @@ const config = defineConfig({
 const system = createSystem(defaultConfig, config)
 
 const RootLayout = () => {
+  const location = useLocation()
+
   return (
     <ChakraProvider value={system}>
-      <GlobalStyles />
-      <Outlet />
-      <Toaster />
+      {/* key сбрасывает boundary после перехода на /500 или другую страницу */}
+      <ErrorBoundary key={location.pathname}>
+        <GlobalStyles />
+        <Outlet />
+        <Toaster />
+      </ErrorBoundary>
     </ChakraProvider>
   )
 }
@@ -199,14 +205,14 @@ export const routes = [
             Component: WithErrorPage,
           },
           {
-            path: '/500',
-            Component: InternalServerErrorPage,
-          },
-          {
             path: '*',
             Component: NotFoundPage,
           },
         ],
+      },
+      {
+        path: '/500',
+        Component: InternalServerErrorPage,
       },
       {
         path: '/game-over',
