@@ -6,22 +6,87 @@ import type { Bonus, Bullet, Enemy, Player } from './types'
 export const drawPlayer = (
   ctx: CanvasRenderingContext2D,
   player: Player,
-  mouseX: number,
-  mouseY: number
+  mouseX: number
 ): void => {
   if (!gameAssets.player) {
     return
   }
 
+  const height = player.radius * 5
+  const width = height * (gameAssets.player.width / gameAssets.player.height)
+
+  const direction = mouseX < player.x ? -1 : 1
+
+  ctx.save()
+
+  ctx.translate(player.x, player.y)
+
+  ctx.scale(direction, 1)
+
+  ctx.drawImage(gameAssets.player, -width / 2, -height / 2, width, height)
+
+  ctx.restore()
+}
+
+export const drawPlayerGun = (
+  ctx: CanvasRenderingContext2D,
+  player: Player,
+  mouseX: number,
+  mouseY: number
+): void => {
+  if (!gameAssets.gun) return
+
   const dx = mouseX - player.x
   const dy = mouseY - player.y
   const angle = Math.atan2(dy, dx)
-  const size = player.radius * 5
+
+  const gunHeight = player.radius * 4
+  const gunWidth = gunHeight * (gameAssets.gun.width / gameAssets.gun.height)
 
   ctx.save()
+
   ctx.translate(player.x, player.y)
+
+  ctx.translate(player.radius * 0.3, 0)
+
   ctx.rotate(angle + Math.PI / 2)
-  ctx.drawImage(gameAssets.player, -size / 2, -size / 2, size, size)
+
+  ctx.drawImage(gameAssets.gun, -gunWidth / 2, -gunHeight, gunWidth, gunHeight)
+
+  ctx.restore()
+}
+
+export const drawMouseLine = (
+  ctx: CanvasRenderingContext2D,
+  player: Player,
+  mouseX: number,
+  mouseY: number
+): void => {
+  const dx = mouseX - player.x
+  const dy = mouseY - player.y
+  const distance = Math.hypot(dx, dy)
+
+  if (distance === 0) {
+    return
+  }
+
+  const maxLength = 150
+  const length = Math.min(distance, maxLength)
+
+  const endX = player.x + (dx / distance) * length
+  const endY = player.y + (dy / distance) * length
+
+  ctx.save()
+
+  ctx.beginPath()
+  ctx.moveTo(player.x, player.y)
+  ctx.lineTo(endX, endY)
+
+  ctx.setLineDash([6, 8])
+  ctx.lineWidth = 2
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'
+  ctx.stroke()
+
   ctx.restore()
 }
 
