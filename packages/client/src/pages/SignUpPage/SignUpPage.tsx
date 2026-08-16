@@ -53,7 +53,7 @@ export const SignUpPage: React.FC = () => {
         type: 'success',
       })
 
-      navigate('/game')
+      navigate('/')
     } catch (error: unknown) {
       if (error instanceof Error) {
         toaster.create({

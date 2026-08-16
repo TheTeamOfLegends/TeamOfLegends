@@ -33,6 +33,7 @@ import { ProfilePage, initProfilePage } from './pages/Profile/ProfilePage'
 import { GamePage } from './pages/GamePage/GamePage'
 import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
 import { GameOverPage } from './pages/GameOverPage/GameOverPage'
+import { useProfileStore } from './stores/profileStore'
 
 const config = defineConfig({
   theme: {},
@@ -55,33 +56,41 @@ const RootLayout = () => {
   )
 }
 
-/** Страницы только для гостей (вход / регистрация) */
-export const GuestOnlyGuard = ({ children }: { children: React.ReactNode }) => {
-  const navigate = useNavigate()
-  const [isReady, setIsReady] = useState(false)
+export const useAuth = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const user = useProfileStore(s => s.user)
 
   useEffect(() => {
     let cancelled = false
 
-    checkAuth().then(isAuthenticated => {
-      if (cancelled) {
-        return
-      }
+    checkAuth().then(isAuth => {
+      if (cancelled) return
 
-      if (isAuthenticated) {
-        navigate('/', { replace: true })
-        return
-      }
-
-      setIsReady(true)
+      setIsAuthenticated(isAuth)
+      setIsLoading(false)
     })
 
     return () => {
       cancelled = true
     }
-  }, [navigate])
+  }, [user?.id])
 
-  if (!isReady) {
+  return { isAuthenticated, isLoading }
+}
+
+/** Страницы только для гостей (вход / регистрация) */
+export const GuestOnlyGuard = ({ children }: { children: React.ReactNode }) => {
+  const navigate = useNavigate()
+  const { isAuthenticated, isLoading } = useAuth()
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate('/', { replace: true })
+    }
+  }, [isLoading, isAuthenticated, navigate])
+
+  if (isLoading) {
     return <AppSpinner />
   }
 
@@ -91,30 +100,15 @@ export const GuestOnlyGuard = ({ children }: { children: React.ReactNode }) => {
 /** Защищённые страницы: без авторизации редирект на /sign-in */
 export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate()
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const { isAuthenticated, isLoading } = useAuth()
 
   useEffect(() => {
-    let cancelled = false
-
-    checkAuth().then(result => {
-      if (cancelled) {
-        return
-      }
-
-      if (!result) {
-        navigate('/sign-in', { replace: true })
-        return
-      }
-
-      setIsAuthenticated(true)
-    })
-
-    return () => {
-      cancelled = true
+    if (!isLoading && !isAuthenticated) {
+      navigate('/sign-in', { replace: true })
     }
-  }, [navigate])
+  }, [isLoading, isAuthenticated, navigate])
 
-  if (!isAuthenticated) {
+  if (isLoading) {
     return <AppSpinner />
   }
 

@@ -44,7 +44,7 @@ export const SignInPage: React.FC = () => {
       await authApi.signIn(data)
       await loadProfile()
 
-      navigate('/game')
+      navigate('/')
     } catch (error: unknown) {
       if (error instanceof Error) {
         toaster.create({
