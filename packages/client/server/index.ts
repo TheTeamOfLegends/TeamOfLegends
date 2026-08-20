@@ -109,6 +109,13 @@ async function createServer() {
       // Завершаем запрос и отдаём HTML-страницу
       res.status(200).set({ 'Content-Type': 'text/html' }).end(html)
     } catch (e) {
+      if (e instanceof Response) {
+        res.writeHead(e.status, {
+          Location: e.headers.get('Location') || '/',
+        })
+        return res.end()
+      }
+
       vite.ssrFixStacktrace(e as Error)
       next(e)
     }

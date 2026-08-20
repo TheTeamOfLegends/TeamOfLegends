@@ -6,7 +6,13 @@ import {
 } from '@chakra-ui/react'
 import { GlobalStyles } from './theme/GlobalStyles'
 import { useEffect, useState } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import {
+  LoaderFunctionArgs,
+  Outlet,
+  redirect,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom'
 import { AppSpinner } from './components/ui/loader/app-spinner'
 import { Toaster } from './components/ui/toaster'
 import { checkAuth } from './api/auth'
@@ -34,6 +40,7 @@ import { GamePage } from './pages/GamePage/GamePage'
 import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
 import { GameOverPage } from './pages/GameOverPage/GameOverPage'
 import { useProfileStore } from './stores/profileStore'
+import { OAuthYandexCallbackPage } from './pages/OAuth/OAuthYandex'
 
 const config = defineConfig({
   theme: {},
@@ -115,6 +122,20 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>
 }
 
+/**
+ * При наличии oauth кода перенаправляем пользователя на callback страницу
+ */
+const checkOAuthCode = async ({ request }: LoaderFunctionArgs) => {
+  const url = new URL(request.url)
+  const code = url.searchParams.get('code')
+
+  if (code) {
+    return redirect(`/callback/oauth/yandex${url.search}`)
+  }
+
+  return null
+}
+
 export const routes = [
   {
     path: '/',
@@ -151,6 +172,7 @@ export const routes = [
           {
             path: '/',
             Component: MainPage,
+            loader: checkOAuthCode,
           },
           {
             path: '/friends',
@@ -211,6 +233,10 @@ export const routes = [
       {
         path: '/game-over',
         Component: GameOverPage,
+      },
+      {
+        path: '/callback/oauth/yandex',
+        Component: OAuthYandexCallbackPage,
       },
       // Все остальные страницы добавляйте сюда:
       // { path: 'dashboard', Component: DashboardPage }
