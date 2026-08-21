@@ -9,7 +9,7 @@ import { User } from '../types/user'
 
 export type AppInitialState = {
   ssr: {
-    pageHasBeenInitializedOnServer: boolean
+    initializedPath: string | null
   }
   friends: {
     data: Friend[]
@@ -37,7 +37,7 @@ declare global {
 }
 
 export const resetStoresForSsr = () => {
-  useSsrStore.setState({ pageHasBeenInitializedOnServer: false })
+  useSsrStore.setState({ initializedPath: null })
   useFriendsStore.setState({ data: [], isLoading: false })
   useForumStore.setState({ topics: null, isLoading: false })
   useForumTopicStore.setState({
@@ -57,7 +57,7 @@ export const getAppInitialState = (): AppInitialState => {
 
   return {
     ssr: {
-      pageHasBeenInitializedOnServer: ssr.pageHasBeenInitializedOnServer,
+      initializedPath: ssr.initializedPath,
     },
     friends: {
       data: friends.data,

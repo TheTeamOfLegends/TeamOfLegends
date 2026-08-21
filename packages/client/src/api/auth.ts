@@ -10,10 +10,14 @@ import {
  * Проверяет авторизацию через API.
  * При недоступности сети использует последний успешный профиль из localStorage,
  * чтобы AuthGuard не выкидывал пользователя в офлайне (PWA / service worker).
+ *
+ * @param cookieHeader — Cookie из Express-запроса (для SSR)
  */
-export const checkAuth = async (): Promise<boolean> => {
+export const checkAuth = async (cookieHeader?: string): Promise<boolean> => {
   try {
-    const user = await getProfile()
+    const user = await getProfile(
+      cookieHeader ? { cookie: cookieHeader } : undefined
+    )
     useProfileStore.getState().setUser(user)
     saveAuthSession(user)
     return true

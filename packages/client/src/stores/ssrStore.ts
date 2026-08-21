@@ -1,12 +1,12 @@
 import { create } from 'zustand'
 
 interface SsrState {
-  pageHasBeenInitializedOnServer: boolean
-  setPageHasBeenInitializedOnServer: (value: boolean) => void
+  /** Pathname страницы, для которой на SSR уже вызвали fetchData. null — не инициализировали. */
+  initializedPath: string | null
+  setInitializedPath: (path: string | null) => void
 }
 
 export const useSsrStore = create<SsrState>(set => ({
-  pageHasBeenInitializedOnServer: false,
-  setPageHasBeenInitializedOnServer: value =>
-    set({ pageHasBeenInitializedOnServer: value }),
+  initializedPath: null,
+  setInitializedPath: path => set({ initializedPath: path }),
 }))
