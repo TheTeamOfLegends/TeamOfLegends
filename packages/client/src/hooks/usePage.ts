@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import { PageInitArgs, PageInitContext } from '../types'
 import { useSsrStore } from '../stores/ssrStore'
 
@@ -23,29 +23,25 @@ type PageProps = {
   initPage: (data: PageInitArgs) => Promise<unknown>
 }
 
+/**
+ * Клиентская инициализация страницы.
+ * Если текущий pathname уже был инициализирован на SSR — повторный fetch не делаем.
+ */
 export const usePage = ({ initPage }: PageProps) => {
-  const pageHasBeenInitializedOnServer = useSsrStore(
-    s => s.pageHasBeenInitializedOnServer
-  )
-  const setPageHasBeenInitializedOnServer = useSsrStore(
-    s => s.setPageHasBeenInitializedOnServer
-  )
+  const initializedPath = useSsrStore(s => s.initializedPath)
+  const setInitializedPath = useSsrStore(s => s.setInitializedPath)
   const params = useParams()
+  const { pathname } = useLocation()
 
   useEffect(() => {
-    if (pageHasBeenInitializedOnServer) {
-      setPageHasBeenInitializedOnServer(false)
+    if (initializedPath === pathname) {
+      setInitializedPath(null)
       return
     }
 
-    initPage({
+    void initPage({
       ctx: createContext(),
       params,
     })
-  }, [
-    pageHasBeenInitializedOnServer,
-    setPageHasBeenInitializedOnServer,
-    initPage,
-    params,
-  ])
+  }, [initializedPath, setInitializedPath, initPage, params, pathname])
 }

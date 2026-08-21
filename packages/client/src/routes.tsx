@@ -4,9 +4,10 @@ import {
   defaultConfig,
   defineConfig,
 } from '@chakra-ui/react'
+import { CacheProvider } from '@emotion/react'
 import { GlobalStyles } from './theme/GlobalStyles'
 import { useEffect, useState } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { AppSpinner } from './components/ui/loader/app-spinner'
 import { Toaster } from './components/ui/toaster'
 import { checkAuth } from './api/auth'
@@ -34,6 +35,10 @@ import { GamePage } from './pages/GamePage/GamePage'
 import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
 import { GameOverPage } from './pages/GameOverPage/GameOverPage'
 import { useProfileStore } from './stores/profileStore'
+import {
+  clientEmotionCache,
+  createEmotionCache,
+} from './emotion/createEmotionCache'
 
 const config = defineConfig({
   theme: {},
@@ -41,25 +46,42 @@ const config = defineConfig({
 
 const system = createSystem(defaultConfig, config)
 
+const emotionCache = clientEmotionCache ?? createEmotionCache()
+
 const RootLayout = () => {
   const location = useLocation()
 
   return (
-    <ChakraProvider value={system}>
-      {/* key сбрасывает boundary после перехода на /500 или другую страницу */}
-      <ErrorBoundary key={location.pathname}>
-        <GlobalStyles />
-        <Outlet />
-        <Toaster />
-      </ErrorBoundary>
-    </ChakraProvider>
+    <CacheProvider value={emotionCache}>
+      <ChakraProvider value={system}>
+        {/* key сбрасывает boundary после перехода на /500 или другую страницу */}
+        <ErrorBoundary key={location.pathname}>
+          <GlobalStyles />
+          <Outlet />
+          <Toaster />
+        </ErrorBoundary>
+      </ChakraProvider>
+    </CacheProvider>
   )
 }
 
+/**
+ * На SSR не блокируем разметку спиннером: пользователь уже подтянут в entry-server.
+ * На клиенте спиннер только пока идёт первая проверка и нет гидрированного user.
+ */
 export const useAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
   const user = useProfileStore(s => s.user)
+  const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(user))
+  const [isLoading, setIsLoading] = useState(
+    () => typeof window !== 'undefined' && !user
+  )
+
+  useEffect(() => {
+    if (user) {
+      setIsAuthenticated(true)
+      setIsLoading(false)
+    }
+  }, [user])
 
   useEffect(() => {
     let cancelled = false
@@ -81,17 +103,14 @@ export const useAuth = () => {
 
 /** Страницы только для гостей (вход / регистрация) */
 export const GuestOnlyGuard = ({ children }: { children: React.ReactNode }) => {
-  const navigate = useNavigate()
   const { isAuthenticated, isLoading } = useAuth()
-
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      navigate('/', { replace: true })
-    }
-  }, [isLoading, isAuthenticated, navigate])
 
   if (isLoading) {
     return <AppSpinner />
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />
   }
 
   return <>{children}</>
@@ -99,17 +118,14 @@ export const GuestOnlyGuard = ({ children }: { children: React.ReactNode }) => {
 
 /** Защищённые страницы: без авторизации редирект на /sign-in */
 export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
-  const navigate = useNavigate()
   const { isAuthenticated, isLoading } = useAuth()
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      navigate('/sign-in', { replace: true })
-    }
-  }, [isLoading, isAuthenticated, navigate])
 
   if (isLoading) {
     return <AppSpinner />
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/sign-in" replace />
   }
 
   return <>{children}</>
@@ -120,9 +136,11 @@ export const routes = [
     path: '/',
     element: <RootLayout />,
     errorElement: (
-      <ChakraProvider value={system}>
-        <RouteError />
-      </ChakraProvider>
+      <CacheProvider value={emotionCache}>
+        <ChakraProvider value={system}>
+          <RouteError />
+        </ChakraProvider>
+      </CacheProvider>
     ),
     children: [
       {
