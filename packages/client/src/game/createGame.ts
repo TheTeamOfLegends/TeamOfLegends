@@ -30,6 +30,8 @@ import {
   drawEnemies,
   drawEnemyIndicators,
   drawPlayer,
+  drawPlayerGun,
+  drawMouseLine,
 } from './render'
 import { getHighScore, saveHighScore } from './scoreStorage'
 import {
@@ -254,7 +256,9 @@ export function startGame(
     drawBackground(ctx, starryNight, canvas.width, canvas.height)
     drawPlatforms(ctx, platforms)
     drawParticles(ctx, particles)
-    drawPlayer(ctx, player, mouseX, mouseY)
+    drawMouseLine(ctx, player, mouseX, mouseY)
+    drawPlayerGun(ctx, player, mouseX, mouseY)
+    drawPlayer(ctx, player, mouseX)
     drawEnemies(ctx, enemies)
     drawBullets(ctx, bullets)
     drawBonuses(ctx, bonuses)

@@ -1,14 +1,16 @@
 import playerSrc from '@/assets/game/player.svg'
+import gunSrc from '@/assets/game/gun.svg'
 import enemySrc from '@/assets/game/enemy.svg'
 import healthSrc from '@/assets/game/health.svg'
 import shotgunSrc from '@/assets/game/shotgun.svg'
 import machineGunSrc from '@/assets/game/machine-gun.svg'
 
-type AssetKey = 'player' | 'enemy' | 'health' | 'shotgun' | 'machineGun'
+type AssetKey = 'player' | 'gun' | 'enemy' | 'health' | 'shotgun' | 'machineGun'
 type GameAssetsState = Record<AssetKey, HTMLImageElement | null>
 
 export const gameAssets: GameAssetsState = {
   player: null,
+  gun: null,
   enemy: null,
   health: null,
   shotgun: null,
@@ -27,6 +29,7 @@ export function loadGameAssets() {
   }
 
   gameAssets.player = createImage(playerSrc)
+  gameAssets.gun = createImage(gunSrc)
   gameAssets.enemy = createImage(enemySrc)
   gameAssets.health = createImage(healthSrc)
   gameAssets.shotgun = createImage(shotgunSrc)
