@@ -4,11 +4,11 @@ import { Flex } from '@chakra-ui/react'
 import { Helmet } from 'react-helmet-async'
 import { Header } from '../../components/Header/Header'
 import { AppSpinner } from '../../components/ui/loader/app-spinner'
-import { useInitProfile } from '../../hooks/useInitProfile'
+import { usePage } from '../../hooks/usePage'
 import { useProfileStore } from '../../stores/profileStore'
 
 export const ProfilePage = () => {
-  useInitProfile()
+  usePage({ initPage: initProfilePage })
 
   const user = useProfileStore(s => s.user)
   const isLoading = useProfileStore(s => s.isLoading)

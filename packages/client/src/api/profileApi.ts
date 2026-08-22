@@ -10,12 +10,23 @@ export class NetworkError extends Error {
   }
 }
 
-export const getProfile = async () => {
+export type GetProfileOptions = {
+  /** Cookie-заголовок запроса браузера — нужен для SSR (credentials в Node не помогут). */
+  cookie?: string
+}
+
+export const getProfile = async (options?: GetProfileOptions) => {
   let response: Response
+
+  const headers: Record<string, string> = {}
+  if (options?.cookie) {
+    headers.cookie = options.cookie
+  }
 
   try {
     response = await fetch(`${API_BASE_URL}/v2/auth/user`, {
       credentials: 'include',
+      headers,
     })
   } catch {
     throw new NetworkError()

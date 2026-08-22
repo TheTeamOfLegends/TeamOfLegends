@@ -1,5 +1,7 @@
 import ReactDOM from 'react-dom/server'
 import { ServerStyleSheet } from 'styled-components'
+import { CacheProvider } from '@emotion/react'
+import createEmotionServer from '@emotion/server/create-instance'
 import { HelmetProvider, type HelmetServerState } from 'react-helmet-async'
 import { Request as ExpressRequest } from 'express'
 import {
@@ -18,9 +20,14 @@ import { routes } from './routes'
 import './index.css'
 import { getAppInitialState, resetStoresForSsr } from './stores/hydrate'
 import { useSsrStore } from './stores/ssrStore'
+import { checkAuth } from './api/auth'
+import { createEmotionCache } from './emotion/createEmotionCache'
 
 export const render = async (req: ExpressRequest) => {
   resetStoresForSsr()
+
+  // Подтягиваем пользователя на сервере по cookies — иначе AuthGuard отдаст спиннер/редирект
+  await checkAuth(req.headers.cookie)
 
   const { query, dataRoutes } = createStaticHandler(routes)
   const fetchRequest = createFetchRequest(req)
@@ -44,7 +51,7 @@ export const render = async (req: ExpressRequest) => {
   const fetchData =
     'fetchData' in lastMatch.route ? lastMatch.route.fetchData : null
 
-  let pageHasBeenInitializedOnServer = false
+  let initializedPath: string | null = null
 
   // Вызываем только если это действительно функция
   if (typeof fetchData === 'function') {
@@ -54,29 +61,35 @@ export const render = async (req: ExpressRequest) => {
         params: lastMatch.params,
       })
 
-      pageHasBeenInitializedOnServer = true
+      initializedPath = url.pathname
     } catch (e) {
       console.log('Инициализация страницы произошла с ошибкой', e)
     }
   }
 
-  useSsrStore
-    .getState()
-    .setPageHasBeenInitializedOnServer(pageHasBeenInitializedOnServer)
+  useSsrStore.getState().setInitializedPath(initializedPath)
 
   const router = createStaticRouter(dataRoutes, context)
   const sheet = new ServerStyleSheet()
+  const emotionCache = createEmotionCache()
+  const { extractCriticalToChunks, constructStyleTagsFromChunks } =
+    createEmotionServer(emotionCache)
   const helmetContext: { helmet?: HelmetServerState } = {}
 
   try {
     const html = ReactDOM.renderToString(
       sheet.collectStyles(
-        <HelmetProvider context={helmetContext}>
-          <StaticRouterProvider router={router} context={context} />
-        </HelmetProvider>
+        <CacheProvider value={emotionCache}>
+          <HelmetProvider context={helmetContext}>
+            <StaticRouterProvider router={router} context={context} />
+          </HelmetProvider>
+        </CacheProvider>
       )
     )
-    const styleTags = sheet.getStyleTags()
+
+    const emotionChunks = extractCriticalToChunks(html)
+    const emotionStyleTags = constructStyleTagsFromChunks(emotionChunks)
+    const styleTags = `${sheet.getStyleTags()}${emotionStyleTags}`
     const helmet = helmetContext.helmet
 
     if (!helmet) {

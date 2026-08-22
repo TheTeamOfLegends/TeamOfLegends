@@ -39,9 +39,7 @@ export const Logo = ({
 
   const content = (
     <HStack gap={3} {...props}>
-      {showIcon && (
-        <PlayerIcon width={50} style={{ transform: 'rotate(40deg)' }} />
-      )}
+      {showIcon && <PlayerIcon width={40} />}
 
       <Text
         fontFamily="Orbitron"
