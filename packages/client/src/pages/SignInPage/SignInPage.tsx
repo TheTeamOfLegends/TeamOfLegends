@@ -18,6 +18,7 @@ import { LuEye, LuEyeOff } from 'react-icons/lu'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { toaster } from '../../components/ui/toaster'
 import { useProfileStore } from '@/stores/profileStore'
+import { oauthGetClientId, oauthRedirect } from '@/api/oauthApi'
 
 const DEFAULT_VALUES: SignInFormValues = {
   login: '',
@@ -45,6 +46,20 @@ export const SignInPage: React.FC = () => {
       await loadProfile()
 
       navigate('/')
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toaster.create({
+          description: error.message,
+          type: 'error',
+        })
+      }
+    }
+  }
+
+  const onOAuthClick = async () => {
+    try {
+      const clientId = await oauthGetClientId()
+      oauthRedirect(clientId)
     } catch (error: unknown) {
       if (error instanceof Error) {
         toaster.create({
@@ -100,12 +115,6 @@ export const SignInPage: React.FC = () => {
               <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
             </Field.Root>
 
-            <Link colorPalette="blue" asChild>
-              <RouterLink to="/sign-up">
-                У вас нет аккаунта? Зарегистрироваться
-              </RouterLink>
-            </Link>
-
             <Button
               type="submit"
               colorPalette="blue"
@@ -114,6 +123,52 @@ export const SignInPage: React.FC = () => {
               mt={2}>
               Войти
             </Button>
+
+            <Flex
+              width={'100%'}
+              alignItems={'center'}
+              _before={{
+                content: '""',
+                marginLeft: '6',
+                flexGrow: 1,
+                height: '2px',
+                backgroundColor: 'gray.300',
+              }}
+              _after={{
+                content: '""',
+                marginRight: '6',
+                flexGrow: 1,
+                height: '2px',
+                backgroundColor: 'gray.300',
+              }}>
+              <Box color={'gray.600'} marginInline={6}>
+                или
+              </Box>
+            </Flex>
+
+            <Button
+              onClick={onOAuthClick}
+              type="button"
+              colorPalette="black"
+              width="full"
+              mt={2}
+              display={'flex'}
+              alignItems={'center'}
+              columnGap={3}>
+              <img
+                src="/Yandex_icon.svg"
+                alt="Иконка Яндекс"
+                width="20"
+                height="20"
+              />
+              <span>Войти с Яндекс ID</span>
+            </Button>
+
+            <Link colorPalette="blue" asChild>
+              <RouterLink to="/sign-up">
+                У вас нет аккаунта? Зарегистрироваться
+              </RouterLink>
+            </Link>
           </VStack>
         </form>
       </Box>
