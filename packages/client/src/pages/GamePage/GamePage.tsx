@@ -5,6 +5,10 @@ import { Box } from '@chakra-ui/react'
 import { Header } from '../../components/Header/Header'
 import { GameButton } from '@/components/ui/GameButton/GameButton'
 import {
+  ensureNotificationPermission,
+  showGameReturnNotification,
+} from '@/api/notifications'
+import {
   startGame,
   type GameController,
   type GameHudState,
@@ -23,15 +27,31 @@ const INITIAL_HUD: GameHudState = {
   shotgunRemainingMs: 0,
 }
 
+const RETURN_NOTIFICATION_DELAY_MS = 60_000
+
 export const GamePage = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const controllerRef = useRef<GameController | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const hudRef = useRef<GameHudState>(INITIAL_HUD)
+  const returnNotificationTimerRef = useRef<number | undefined>(undefined)
+
   const [gameOver, setGameOver] = useState<GameOverPayload | null>(null)
   const [paused, setPaused] = useState(false)
   const [hud, setHud] = useState<GameHudState>(INITIAL_HUD)
   const [gameStart, setGameStart] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
+
+  useEffect(() => {
+    hudRef.current = hud
+  }, [hud])
+
+  const clearReturnNotificationTimer = () => {
+    if (returnNotificationTimerRef.current !== undefined) {
+      clearTimeout(returnNotificationTimerRef.current)
+      returnNotificationTimerRef.current = undefined
+    }
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -43,6 +63,7 @@ export const GamePage = () => {
       onGameOver: payload => {
         setGameOver(payload)
         setPaused(false)
+        clearReturnNotificationTimer()
       },
       onHudUpdate: nextHud => {
         setHud(nextHud)
@@ -52,12 +73,12 @@ export const GamePage = () => {
       },
     })
 
-    // Freeze gameplay under the start overlay (same as PauseOverlay).
     controller.setPauseControlsEnabled(false)
     controller.pause()
     controllerRef.current = controller
 
     return () => {
+      clearReturnNotificationTimer()
       controller.stop()
       controllerRef.current = null
     }
@@ -74,6 +95,33 @@ export const GamePage = () => {
     }
   }, [])
 
+  useEffect(() => {
+    if (gameStart || gameOver) {
+      clearReturnNotificationTimer()
+      return
+    }
+
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        controllerRef.current?.pause()
+
+        clearReturnNotificationTimer()
+        returnNotificationTimerRef.current = window.setTimeout(() => {
+          showGameReturnNotification({ score: hudRef.current.score })
+        }, RETURN_NOTIFICATION_DELAY_MS)
+      } else {
+        clearReturnNotificationTimer()
+      }
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    return () => {
+      clearReturnNotificationTimer()
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+  }, [gameStart, gameOver])
+
   const handleToggleFullscreen = async () => {
     const el = containerRef.current
     if (!el) return
@@ -89,9 +137,11 @@ export const GamePage = () => {
     }
   }
 
-  const handleStart = () => {
+  const handleStart = async () => {
     const controller = controllerRef.current
     if (!controller) return
+
+    await ensureNotificationPermission()
 
     controller.setPauseControlsEnabled(true)
     controller.restart()
