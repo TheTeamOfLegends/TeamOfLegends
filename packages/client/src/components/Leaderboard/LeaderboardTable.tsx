@@ -1,18 +1,19 @@
-import { Box, Flex, VStack } from '@chakra-ui/react'
-import { LeaderboardEntry } from './types'
-import {
-  tableWrapperStyles,
-  tableScrollStyles,
-  tableHeaderStyles,
-  placeColStyles,
-} from './LeaderboardTable.styles'
+import { Box, Flex, Spinner, VStack } from '@chakra-ui/react'
 import { LeaderboardRow } from './LeaderboardRow'
+import {
+  placeColStyles,
+  tableHeaderStyles,
+  tableScrollStyles,
+  tableWrapperStyles,
+} from './LeaderboardTable.styles'
+import { LeaderboardEntry } from './types'
 
 type Props = {
   entries: LeaderboardEntry[]
+  isLoading: boolean
 }
 
-export const LeaderboardTable = ({ entries }: Props) => (
+export const LeaderboardTable = ({ entries, isLoading }: Props) => (
   <Box {...tableWrapperStyles}>
     <Box {...tableScrollStyles}>
       <Flex {...tableHeaderStyles}>
@@ -32,6 +33,12 @@ export const LeaderboardTable = ({ entries }: Props) => (
           <LeaderboardRow key={entry.place} entry={entry} />
         ))}
       </VStack>
+
+      {isLoading && (
+        <Box display="flex" justifyContent="center" flex={1} px={4} py={3}>
+          <Spinner color="blue.solid" size="lg" />
+        </Box>
+      )}
     </Box>
   </Box>
 )

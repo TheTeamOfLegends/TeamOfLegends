@@ -1,41 +1,103 @@
-import { useEffect, useMemo } from 'react'
+import {
+  getLeaderboard,
+  GetLeaderboardResponse,
+  LEADERBOARD_LIMIT,
+  SCORE_KEY,
+} from '@/api/leaderboardApi'
+import { toaster } from '@/components/ui/toaster'
+import { ERROR_MESSAGES } from '@/dictionary'
+import { Box, Button, Flex } from '@chakra-ui/react'
+import { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { Box, Flex } from '@chakra-ui/react'
 import { Header } from '../../components/Header/Header'
 import {
+  LeaderboardEntry,
   LeaderboardPanel,
   LeaderboardTable,
 } from '../../components/Leaderboard'
-import { API_BASE_URL } from '../../constants'
-import { getHighScore } from '../../game/scoreStorage'
 import { useProfileStore } from '../../stores/profileStore'
-import { buildLeaderboardWithUserScore } from './buildLeaderboard'
-import { MOCK_LEADERBOARD } from './mocks'
-import { pageShellStyles, pageContentStyles } from './styles'
+import { pageContentStyles, pageShellStyles } from './styles'
+import { delay } from '@/components/Leaderboard/utils'
+
+const REQUEST_DELAY_MS = 200
+const INITIAL_CURSOR = 0
+const INITIAL_LEADERBOARD: GetLeaderboardResponse = []
 
 export const LeaderboardPage = () => {
   const user = useProfileStore(s => s.user)
-  const loadProfile = useProfileStore(s => s.loadProfile)
+
+  const [isLoading, setIsLoading] = useState(false)
+  const [isFetching, setIsFetching] = useState(false)
+  const [cursor, setCursor] = useState(INITIAL_CURSOR)
+  const [lastPageLength, setLastPageLength] = useState(0)
+  const [leaderboard, setLeaderboard] =
+    useState<GetLeaderboardResponse>(INITIAL_LEADERBOARD)
 
   useEffect(() => {
-    if (!user) {
-      loadProfile().catch(() => {
-        // Профиль может быть недоступен — покажем логин-заглушку
-      })
-    }
-  }, [user, loadProfile])
+    const loadLeaderboard = async () => {
+      setIsLoading(true)
 
-  const entries = useMemo(
-    () =>
-      buildLeaderboardWithUserScore(MOCK_LEADERBOARD, {
-        login: user?.login || user?.display_name || 'you',
-        score: getHighScore(),
-        avatarUrl: user?.avatar
-          ? `${API_BASE_URL}/v2/resources${user.avatar}`
-          : undefined,
-      }),
-    [user]
-  )
+      await delay(REQUEST_DELAY_MS)
+
+      try {
+        const response = await getLeaderboard({ cursor: INITIAL_CURSOR })
+        setLeaderboard(response)
+        setLastPageLength(response.length)
+      } catch (error) {
+        toaster.create({
+          description:
+            error instanceof Error
+              ? error.message
+              : ERROR_MESSAGES.REQUEST_FAILED,
+          type: 'error',
+        })
+      } finally {
+        setIsLoading(false)
+      }
+
+      return INITIAL_LEADERBOARD
+    }
+
+    loadLeaderboard()
+  }, [])
+
+  const entries: LeaderboardEntry[] = leaderboard.map(({ data }, index) => ({
+    login: data.login,
+    avatarUrl: data.avatar,
+    isCurrentUser: data.login === user?.login,
+    place: index + 1,
+    score: data[SCORE_KEY],
+  }))
+
+  const isLastPage = lastPageLength < LEADERBOARD_LIMIT
+
+  const fetchLeaderboard = async () => {
+    const nextCursor = cursor + LEADERBOARD_LIMIT
+    setIsFetching(true)
+
+    await delay(REQUEST_DELAY_MS)
+
+    try {
+      const nextLeaderboard = await getLeaderboard({ cursor: nextCursor })
+      setLeaderboard(prevLeaderboard => [
+        ...prevLeaderboard,
+        ...nextLeaderboard,
+      ])
+      setCursor(nextCursor)
+    } catch (error) {
+      toaster.create({
+        description:
+          error instanceof Error
+            ? error.message
+            : ERROR_MESSAGES.REQUEST_FAILED,
+        type: 'error',
+      })
+    } finally {
+      setIsFetching(false)
+    }
+
+    return INITIAL_LEADERBOARD
+  }
 
   return (
     <>
@@ -49,7 +111,16 @@ export const LeaderboardPage = () => {
         <Header />
         <Flex {...pageContentStyles}>
           <LeaderboardPanel>
-            <LeaderboardTable entries={entries} />
+            <LeaderboardTable entries={entries} isLoading={isLoading} />
+
+            {!isLastPage && (
+              <Button
+                loading={isFetching}
+                colorPalette="blue"
+                onClick={fetchLeaderboard}>
+                Ещё
+              </Button>
+            )}
           </LeaderboardPanel>
         </Flex>
       </Box>
