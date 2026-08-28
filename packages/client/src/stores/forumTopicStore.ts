@@ -1,3 +1,9 @@
+import {
+  removeCommentReaction as removeCommentReactionApi,
+  removeTopicReaction as removeTopicReactionApi,
+  setCommentReaction as setCommentReactionApi,
+  setTopicReaction as setTopicReactionApi,
+} from '@/api/reactionsApi'
 import { create } from 'zustand'
 
 import { SERVER_HOST } from '../constants'
@@ -10,6 +16,10 @@ interface ForumTopicState {
   comments: ForumComment[]
   isLoading: boolean
   loadTopic: (id: number) => Promise<void>
+  setTopicReaction: (topicId: number, emoji: string) => Promise<void>
+  removeTopicReaction: (topicId: number) => Promise<void>
+  setCommentReaction: (commentId: number, emoji: string) => Promise<void>
+  removeCommentReaction: (commentId: number) => Promise<void>
 }
 
 export const useForumTopicStore = create<ForumTopicState>((set, get) => ({
@@ -47,5 +57,63 @@ export const useForumTopicStore = create<ForumTopicState>((set, get) => ({
         isLoading: false,
       })
     }
+  },
+
+  async setTopicReaction(topicId, emoji) {
+    const data = await setTopicReactionApi(topicId, emoji)
+
+    set(state => ({
+      topic:
+        state.topic && state.topic.id === topicId
+          ? {
+              ...state.topic,
+              reactions: data.reactions,
+            }
+          : state.topic,
+    }))
+  },
+
+  async removeTopicReaction(topicId) {
+    const data = await removeTopicReactionApi(topicId)
+
+    set(state => ({
+      topic:
+        state.topic && state.topic.id === topicId
+          ? {
+              ...state.topic,
+              reactions: data.reactions,
+            }
+          : state.topic,
+    }))
+  },
+
+  async setCommentReaction(commentId, emoji) {
+    const data = await setCommentReactionApi(commentId, emoji)
+
+    set(state => ({
+      comments: state.comments.map(comment =>
+        comment.id === commentId
+          ? {
+              ...comment,
+              reactions: data.reactions,
+            }
+          : comment
+      ),
+    }))
+  },
+
+  async removeCommentReaction(commentId) {
+    const data = await removeCommentReactionApi(commentId)
+
+    set(state => ({
+      comments: state.comments.map(comment =>
+        comment.id === commentId
+          ? {
+              ...comment,
+              reactions: data.reactions,
+            }
+          : comment
+      ),
+    }))
   },
 }))

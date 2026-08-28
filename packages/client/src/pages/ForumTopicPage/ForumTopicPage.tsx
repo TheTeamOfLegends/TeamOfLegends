@@ -14,6 +14,8 @@ import { ReactNode } from 'react'
 import { CommentForm } from '../../components/CommentForm/CommentForm'
 import { useForumTopicStore } from '../../stores/forumTopicStore'
 import { useProfileStore } from '../../stores/profileStore'
+import { ReactionBar } from '@/components/ReactionBar/ReactionBar'
+import { Reaction } from '@/types/reaction'
 
 interface ContainerProps {
   title: string
@@ -45,6 +47,13 @@ const ForumTopicContainer = (props: ContainerProps) => {
   )
 }
 
+const mockReactions: Reaction[] = [
+  { emoji: '😀', count: 2, reactedByMe: false },
+  { emoji: '😂', count: 4, reactedByMe: true },
+  { emoji: '😍', count: 1, reactedByMe: false },
+  { emoji: '😢', count: 3, reactedByMe: false },
+]
+
 export const ForumTopicPage = () => {
   usePage({ initPage: initForumTopicPage })
 
@@ -55,6 +64,8 @@ export const ForumTopicPage = () => {
   const comments = useForumTopicStore(s => s.comments)
   const isLoading = useForumTopicStore(s => s.isLoading)
   const profileUser = useProfileStore(s => s.user)
+
+  const setCommentReaction = useForumTopicStore(s => s.setCommentReaction)
 
   if (isLoading) {
     return (
@@ -92,11 +103,19 @@ export const ForumTopicPage = () => {
         {pageNumber === 1 && (
           <ForumTopicCard author={topic.author}>
             <ForumTopicCardBody {...topic} />
+            <ReactionBar
+              reactions={topic.reactions}
+              onReactionClick={emoji => setTopicReaction(topic.id, emoji)}
+            />
           </ForumTopicCard>
         )}
         {itemsToShow.map(comment => (
           <ForumTopicCard author={comment.author} key={comment.id}>
             <ForumTopicCardBody {...comment} />
+            <ReactionBar
+              reactions={mockReactions}
+              onReactionClick={emoji => setCommentReaction(comment.id, emoji)}
+            />
           </ForumTopicCard>
         ))}
         <CommentForm author={commentAuthor} topicId={topic.id} />
