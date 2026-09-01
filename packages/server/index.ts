@@ -6,9 +6,13 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') })
 
 import express from 'express'
 import { createClientAndConnect } from './db'
+import forumRouter from './src/routes/forumRouter'
+import authMiddleware from './src/middleware/authMiddleware'
 
 const app = express()
 app.use(cors())
+app.use(express.json())
+
 const port = Number(process.env.SERVER_PORT) || 3001
 
 createClientAndConnect()
@@ -28,6 +32,8 @@ app.get('/user', (_, res) => {
 app.get('/', (_, res) => {
   res.json('👋 Howdy from the server :)')
 })
+
+app.use('/forum', authMiddleware, forumRouter)
 
 app.listen(port, () => {
   console.log(`  ➜ 🎸 Server is listening on port: ${port}`)
