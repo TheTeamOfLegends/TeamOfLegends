@@ -3,6 +3,7 @@ import { LeaderboardEntry } from './types'
 import { formatScore } from './utils'
 import { getRowStyles, placeColStyles } from './LeaderboardRow.styles'
 import { PlayerAvatar } from './PlayerAvatar'
+import { API_BASE_URL } from '@/constants'
 
 type Props = {
   entry: LeaderboardEntry
@@ -15,7 +16,10 @@ export const LeaderboardRow = ({ entry }: Props) => (
     </Box>
 
     <HStack flex={1} px={4} gap={3} minW={0}>
-      <PlayerAvatar login={entry.login} avatarUrl={entry.avatarUrl} />
+      <PlayerAvatar
+        login={entry.login}
+        avatarUrl={`${API_BASE_URL}/v2/resources/${entry.avatarUrl}`}
+      />
       <Text color="white" truncate>
         {entry.login}
       </Text>

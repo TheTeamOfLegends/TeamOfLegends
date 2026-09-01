@@ -1,4 +1,7 @@
-import { Box, Flex, Heading, Text, Stack } from '@chakra-ui/react'
+import { addUserToLeaderboard, SCORE_KEY } from '@/api/leaderboardApi'
+import { useProfileStore } from '@/stores/profileStore'
+import { Box, Flex, Heading, Stack, Text } from '@chakra-ui/react'
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { GameButton } from '../../components/ui/GameButton/GameButton'
 
@@ -15,6 +18,18 @@ export const GameOverOverlay = ({
   isNewHighScore,
   onRestart,
 }: GameOverOverlayProps) => {
+  const user = useProfileStore(s => s.user)
+
+  useEffect(() => {
+    if (user) {
+      addUserToLeaderboard({
+        avatar: user.avatar,
+        login: user.login,
+        [SCORE_KEY]: score,
+      })
+    }
+  }, [user?.id, score])
+
   return (
     <Flex
       position="absolute"
