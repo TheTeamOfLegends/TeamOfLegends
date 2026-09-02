@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useContext } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Box } from '@chakra-ui/react'
 
@@ -18,6 +18,7 @@ import { GameHud } from './GameHud'
 import { GameOverOverlay } from './GameOverOverlay'
 import { GameStartOverlay } from './GameStartOverlay'
 import { PauseOverlay } from './PauseOverlay'
+import { ThemeContext } from '../../theme/ThemeContext'
 
 const INITIAL_HUD: GameHudState = {
   score: 0,
@@ -42,9 +43,16 @@ export const GamePage = () => {
   const [gameStart, setGameStart] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
+  const { theme } = useContext(ThemeContext)
+  const themeValue = useRef(theme) // Access the value property if it exists, otherwise use the theme directly
+
   useEffect(() => {
     hudRef.current = hud
   }, [hud])
+
+  useEffect(() => {
+    themeValue.current = theme
+  }, [theme])
 
   const clearReturnNotificationTimer = () => {
     if (returnNotificationTimerRef.current !== undefined) {
@@ -71,6 +79,7 @@ export const GamePage = () => {
       onPauseChange: isPaused => {
         setPaused(isPaused)
       },
+      theme: themeValue,
     })
 
     controller.setPauseControlsEnabled(false)

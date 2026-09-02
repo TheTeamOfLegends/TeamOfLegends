@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { HelmetProvider } from 'react-helmet-async'
+import { ThemeProvider } from './theme/ThemeContext'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { hydrateStores } from './stores/hydrate'
 
@@ -31,7 +32,9 @@ ReactDOM.hydrateRoot(
   document.getElementById('root') as HTMLElement,
   <StrictMode>
     <HelmetProvider>
-      <RouterProvider router={router} />
+      <ThemeProvider>
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </HelmetProvider>
   </StrictMode>
 )
