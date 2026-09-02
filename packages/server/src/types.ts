@@ -31,3 +31,11 @@ export type DbComment = Omit<ForumComment, 'id' | 'topicId' | 'parentId'> & {
   topic_id: number
   parent_id: ForumRelatedId
 }
+
+export type ForumReaction = {
+  id?: number
+  emoji: string
+  userId: number
+  topicId?: number | null
+  commentId?: number | null
+}

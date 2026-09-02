@@ -1,5 +1,10 @@
 import express from 'express'
-import { Topic, Comment } from '../models'
+import { Topic, Comment, Reaction } from '../models'
+import {
+  setReaction,
+  removeReaction,
+  getReactions,
+} from '../controllers/reactionsController'
 
 const forumRouter = express.Router()
 
@@ -55,7 +60,14 @@ forumRouter.get('/topic/:id', async (req, res) => {
       return
     }
 
-    res.json({ topic })
+    const reactions = await Reaction.getReactionSummary({
+      topicId: Number(id),
+    })
+
+    res.json({
+      topic,
+      reactions,
+    })
   } catch (error) {
     console.log(error)
     res.status(404).json('Топик не найден')
@@ -161,17 +173,34 @@ forumRouter.put('/comment', async (req, res) => {
 forumRouter.get('/topic/:id/comments', async (req, res) => {
   try {
     const id = req.params.id
+
     const comments = await Comment.findByTopicId({
       topicId: id,
       limit: req.query.limit,
       offset: req.query.offset,
       view: req.query.view,
     })
-    res.json({ comments })
+
+    const commentIds = comments.rows
+      .map(comment => comment.id)
+      .filter((id): id is number => id !== undefined)
+
+    const reactions = await Reaction.getCommentReactionSummary(commentIds)
+
+    res.json({
+      comments,
+      reactions,
+    })
   } catch (error) {
     console.log(error)
     res.status(404).json('Топик не найден')
   }
 })
+
+forumRouter.post('/reaction', setReaction)
+
+forumRouter.delete('/reaction', removeReaction)
+
+forumRouter.get('/reactions', getReactions)
 
 export default forumRouter
