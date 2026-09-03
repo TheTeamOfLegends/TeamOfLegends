@@ -35,7 +35,7 @@ export const removeReaction = async (req: Request, res: Response) => {
 
 export const getReactions = async (req: Request, res: Response) => {
   try {
-    const reactions = await Reaction.getReactions({
+    const reactions = await Reaction.getReactionSummary({
       topicId: req.query.topicId ? Number(req.query.topicId) : undefined,
       commentId: req.query.commentId ? Number(req.query.commentId) : undefined,
     })

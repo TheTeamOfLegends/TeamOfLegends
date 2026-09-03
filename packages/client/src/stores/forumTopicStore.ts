@@ -5,11 +5,11 @@ import {
   setTopicReaction as setTopicReactionApi,
 } from '@/api/reactionsApi'
 import { create } from 'zustand'
-
 import { SERVER_HOST } from '../constants'
 import { findTopic } from '../pages/ForumPage/topicsMock'
 import { commentsMock } from '../pages/ForumTopicPage/commentsMock'
 import { ForumComment, Topic } from '../types/forum'
+import { useProfileStore } from './profileStore'
 
 interface ForumTopicState {
   topic: Topic | null
@@ -29,6 +29,7 @@ export const useForumTopicStore = create<ForumTopicState>((set, get) => ({
 
   async loadTopic(id) {
     const current = get().topic
+
     if (current && current.id === id) {
       return
     }
@@ -37,18 +38,66 @@ export const useForumTopicStore = create<ForumTopicState>((set, get) => ({
 
     try {
       const [topicResponse, commentsResponse] = await Promise.all([
-        fetch(`${SERVER_HOST}/topic/${id}`),
-        fetch(`${SERVER_HOST}/topic/${id}/comments`),
+        fetch(`${SERVER_HOST}/forum/topic/${id}`),
+        fetch(`${SERVER_HOST}/forum/topic/${id}/comments`),
       ])
 
       if (!topicResponse.ok || !commentsResponse.ok) {
         throw new Error('Forum topic request failed')
       }
 
-      const topic = (await topicResponse.json()) as Topic
-      const comments = (await commentsResponse.json()) as ForumComment[]
+      const topicData = (await topicResponse.json()) as {
+        topic: Topic
+        reactions: {
+          emoji: string
+          count: number
+        }[]
+      }
 
-      set({ topic, comments, isLoading: false })
+      const commentsData = (await commentsResponse.json()) as {
+        comments: {
+          count: number
+          rows: ForumComment[]
+        }
+        reactions: {
+          commentId: number
+          reactions: {
+            emoji: string
+            count: number
+          }[]
+        }[]
+      }
+
+      const topic: Topic = {
+        ...topicData.topic,
+        reactions: topicData.reactions.map(reaction => ({
+          ...reaction,
+          reactedByMe: false,
+        })),
+      }
+
+      const comments: ForumComment[] = commentsData.comments.rows.map(
+        comment => {
+          const commentReactions = commentsData.reactions.find(
+            item => item.commentId === comment.id
+          )
+
+          return {
+            ...comment,
+            reactions:
+              commentReactions?.reactions.map(reaction => ({
+                ...reaction,
+                reactedByMe: false,
+              })) ?? [],
+          }
+        }
+      )
+
+      set({
+        topic,
+        comments,
+        isLoading: false,
+      })
     } catch {
       // TODO удалить mock данные после интеграции с API
       set({
@@ -60,21 +109,45 @@ export const useForumTopicStore = create<ForumTopicState>((set, get) => ({
   },
 
   async setTopicReaction(topicId, emoji) {
-    const data = await setTopicReactionApi(topicId, emoji)
+    const currentReaction = get().topic?.reactions.find(
+      reaction => reaction.reactedByMe
+    )
+
+    if (currentReaction?.emoji === emoji) {
+      await get().removeTopicReaction(topicId)
+      return
+    }
+
+    const userId = useProfileStore.getState().user?.id
+
+    if (!userId) {
+      throw new Error('Пользователь не авторизован')
+    }
+
+    const data = await setTopicReactionApi(topicId, emoji, userId)
 
     set(state => ({
       topic:
         state.topic && state.topic.id === topicId
           ? {
               ...state.topic,
-              reactions: data.reactions,
+              reactions: data.reactions.map(reaction => ({
+                ...reaction,
+                reactedByMe: reaction.emoji === emoji,
+              })),
             }
           : state.topic,
     }))
   },
 
   async removeTopicReaction(topicId) {
-    const data = await removeTopicReactionApi(topicId)
+    const userId = useProfileStore.getState().user?.id
+
+    if (!userId) {
+      throw new Error('Пользователь не авторизован')
+    }
+
+    const data = await removeTopicReactionApi(topicId, userId)
 
     set(state => ({
       topic:
@@ -88,14 +161,32 @@ export const useForumTopicStore = create<ForumTopicState>((set, get) => ({
   },
 
   async setCommentReaction(commentId, emoji) {
-    const data = await setCommentReactionApi(commentId, emoji)
+    const currentReaction = get()
+      .comments.find(comment => comment.id === commentId)
+      ?.reactions.find(reaction => reaction.reactedByMe)
+
+    if (currentReaction?.emoji === emoji) {
+      await get().removeCommentReaction(commentId)
+      return
+    }
+
+    const userId = useProfileStore.getState().user?.id
+
+    if (!userId) {
+      throw new Error('Пользователь не авторизован')
+    }
+
+    const data = await setCommentReactionApi(commentId, emoji, userId)
 
     set(state => ({
       comments: state.comments.map(comment =>
         comment.id === commentId
           ? {
               ...comment,
-              reactions: data.reactions,
+              reactions: data.reactions.map(reaction => ({
+                ...reaction,
+                reactedByMe: reaction.emoji === emoji,
+              })),
             }
           : comment
       ),
@@ -103,7 +194,13 @@ export const useForumTopicStore = create<ForumTopicState>((set, get) => ({
   },
 
   async removeCommentReaction(commentId) {
-    const data = await removeCommentReactionApi(commentId)
+    const userId = useProfileStore.getState().user?.id
+
+    if (!userId) {
+      throw new Error('Пользователь не авторизован')
+    }
+
+    const data = await removeCommentReactionApi(commentId, userId)
 
     set(state => ({
       comments: state.comments.map(comment =>

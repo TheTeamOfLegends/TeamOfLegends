@@ -15,7 +15,6 @@ import { CommentForm } from '../../components/CommentForm/CommentForm'
 import { useForumTopicStore } from '../../stores/forumTopicStore'
 import { useProfileStore } from '../../stores/profileStore'
 import { ReactionBar } from '@/components/ReactionBar/ReactionBar'
-import { Reaction } from '@/types/reaction'
 
 interface ContainerProps {
   title: string
@@ -47,13 +46,6 @@ const ForumTopicContainer = (props: ContainerProps) => {
   )
 }
 
-const mockReactions: Reaction[] = [
-  { emoji: '😀', count: 2, reactedByMe: false },
-  { emoji: '😂', count: 4, reactedByMe: true },
-  { emoji: '😍', count: 1, reactedByMe: false },
-  { emoji: '😢', count: 3, reactedByMe: false },
-]
-
 export const ForumTopicPage = () => {
   usePage({ initPage: initForumTopicPage })
 
@@ -65,6 +57,7 @@ export const ForumTopicPage = () => {
   const isLoading = useForumTopicStore(s => s.isLoading)
   const profileUser = useProfileStore(s => s.user)
 
+  const setTopicReaction = useForumTopicStore(s => s.setTopicReaction)
   const setCommentReaction = useForumTopicStore(s => s.setCommentReaction)
 
   if (isLoading) {
@@ -113,7 +106,7 @@ export const ForumTopicPage = () => {
           <ForumTopicCard author={comment.author} key={comment.id}>
             <ForumTopicCardBody {...comment} />
             <ReactionBar
-              reactions={mockReactions}
+              reactions={comment.reactions}
               onReactionClick={emoji => setCommentReaction(comment.id, emoji)}
             />
           </ForumTopicCard>

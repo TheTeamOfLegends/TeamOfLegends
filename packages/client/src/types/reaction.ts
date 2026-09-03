@@ -5,6 +5,5 @@ export type Reaction = {
 }
 
 export type Reactions = {
-  commentId: number
   reactions: Reaction[]
 }
