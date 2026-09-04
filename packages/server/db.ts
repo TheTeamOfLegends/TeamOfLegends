@@ -1,24 +1,29 @@
 import { Dialect, Sequelize } from 'sequelize'
 import dbConfig from './sequelize.config.js'
 
-const dbDevConfig = dbConfig.development
+const env = process.env.NODE_ENV === 'production' ? 'production' : 'development'
+const activeConfig = dbConfig[env] ?? dbConfig.development
 
-if (!dbDevConfig.database) {
-  throw 'Set database name'
+if (!activeConfig.database) {
+  throw new Error(
+    'Set POSTGRES_DB via environment (.env or Docker compose). See .env.sample'
+  )
 }
 
-if (!dbDevConfig.username) {
-  throw 'Set database user'
+if (!activeConfig.username) {
+  throw new Error(
+    'Set POSTGRES_USER via environment (.env or Docker compose). See .env.sample'
+  )
 }
 
 export const sequelize = new Sequelize(
-  dbDevConfig.database,
-  dbDevConfig.username,
-  dbDevConfig.password,
+  activeConfig.database,
+  activeConfig.username,
+  activeConfig.password,
   {
-    host: dbDevConfig.host,
-    port: dbDevConfig.port,
-    dialect: dbDevConfig.dialect as Dialect,
+    host: activeConfig.host,
+    port: activeConfig.port,
+    dialect: activeConfig.dialect as Dialect,
     logging: false,
   }
 )
@@ -26,15 +31,13 @@ export const sequelize = new Sequelize(
 export const createClientAndConnect = async () => {
   try {
     const [results] = await sequelize.query('SELECT NOW()')
-    console.log(
-      '  ➜ 🎸 Connected to the database at:',
-      (results as [{ now: string }])[0].now!
-    )
+    const row = (results as { now?: string }[])[0]
+    console.log('  ➜ 🎸 Connected to the database at:', row?.now)
   } catch (e) {
     console.error(
       '  ➜ 🎸 Database is not available on %s:%s. Start Postgres, e.g. `docker compose up postgres -d`',
-      dbDevConfig.host,
-      dbDevConfig.port
+      activeConfig.host,
+      activeConfig.port
     )
     console.error(e)
   }

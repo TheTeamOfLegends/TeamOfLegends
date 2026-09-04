@@ -13,14 +13,20 @@ services:
     ports:
       - '${CLIENT_PORT}:80'
     environment:
-      - CLIENT_PORT=${CLIENT_PORT}
-      - SERVER_PORT=${SERVER_PORT}
+      CLIENT_PORT: ${CLIENT_PORT}
+      SERVER_PORT: ${SERVER_PORT}
+      # SSR/API внутри docker-сети
+      INTERNAL_SERVER_URL: http://server:${SERVER_PORT}
+      EXTERNAL_SERVER_URL: ${EXTERNAL_SERVER_URL}
     depends_on:
-      - server
+      server:
+        condition: service_healthy
+    networks:
+      - app-net
 
   server:
     container_name: prakticum-server
-    image: prackicum-server
+    image: prakticum-server
     build:
       context: .
       dockerfile: Dockerfile.server
@@ -29,17 +35,34 @@ services:
     restart: always
     ports:
       - '${SERVER_PORT}:${SERVER_PORT}'
+    env_file:
+      - .env
     environment:
       SERVER_PORT: ${SERVER_PORT}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_PORT: 5432
-      # Имя сервиса в compose-сети (не localhost)
+      POSTGRES_PORT: '5432'
+      # Имя сервиса в docker-сети (не localhost)
       POSTGRES_HOST: postgres
+      NODE_ENV: production
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('http').get('http://127.0.0.1:'+(process.env.SERVER_PORT||3001)+'/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - app-net
 
   postgres:
     container_name: prakticum-postgres
@@ -48,6 +71,8 @@ services:
     ports:
       # Снаружи: POSTGRES_PORT из .env → внутри контейнера Postgres всегда 5432
       - '${POSTGRES_PORT}:5432'
+    env_file:
+      - .env
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -55,8 +80,14 @@ services:
     volumes:
       - ./tmp/pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
       interval: 5s
       timeout: 5s
       retries: 10
       start_period: 10s
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    driver: bridge

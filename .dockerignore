@@ -1,0 +1,17 @@
+# Не копировать секреты и локальные артефакты в Docker build context
+.env
+.env.*
+!.env.sample
+.git
+.idea
+.vscode
+node_modules
+**/node_modules
+**/dist
+tmp
+tmp/**
+*.log
+lerna-debug.log
+.DS_Store
+coverage
+**/.turbo
