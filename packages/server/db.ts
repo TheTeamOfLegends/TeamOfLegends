@@ -32,7 +32,8 @@ export const createClientAndConnect = async () => {
     )
   } catch (e) {
     console.error(
-      '  ➜ 🎸 Database is not available on localhost:%s. Start Postgres, e.g. `docker compose up postgres -d`',
+      '  ➜ 🎸 Database is not available on %s:%s. Start Postgres, e.g. `docker compose up postgres -d`',
+      dbDevConfig.host,
       dbDevConfig.port
     )
     console.error(e)
