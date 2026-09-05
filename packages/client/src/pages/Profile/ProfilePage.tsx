@@ -6,8 +6,12 @@ import { Header } from '../../components/Header/Header'
 import { AppSpinner } from '../../components/ui/loader/app-spinner'
 import { usePage } from '../../hooks/usePage'
 import { useProfileStore } from '../../stores/profileStore'
+import { useContext } from 'react'
+import { ThemeContext } from '../../theme/ThemeContext'
 
 export const ProfilePage = () => {
+  const { theme } = useContext(ThemeContext)
+  const isLight = theme === 'light'
   usePage({ initPage: initProfilePage })
 
   const user = useProfileStore(s => s.user)
@@ -30,11 +34,11 @@ export const ProfilePage = () => {
       <Flex
         minH="100vh"
         align="center"
-        bg="bg.panel"
         gap={12}
         py={10}
-        mx={6}
-        direction="column">
+        direction="column"
+        bg={isLight ? 'white' : '#080B2C'}
+        color={isLight ? 'black' : 'white'}>
         <ProfileInfo user={user} />
         <ChangePasswordForm />
         <LogoutLink />

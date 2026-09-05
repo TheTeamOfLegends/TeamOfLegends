@@ -7,6 +7,8 @@ import {
 } from '@chakra-ui/react'
 import { HiChevronLeft, HiChevronRight } from 'react-icons/hi'
 import { Link } from 'react-router-dom'
+import { useContext } from 'react'
+import { ThemeContext } from '../../theme/ThemeContext'
 
 interface StarPaginationProps {
   count: number
@@ -17,6 +19,8 @@ interface StarPaginationProps {
 export const StarPagination = (props: StarPaginationProps) => {
   const { count, pageSize, pageNumber } = props
   const lastPageNumber = Math.ceil(count / pageSize)
+  const { theme } = useContext(ThemeContext)
+  const isLight = theme === 'light'
 
   const PaginationLink = (
     props: IconButtonProps & {
@@ -46,7 +50,10 @@ export const StarPagination = (props: StarPaginationProps) => {
       pageSize={pageSize}
       defaultPage={1}
       page={pageNumber}>
-      <ButtonGroup variant="ghost" size="sm">
+      <ButtonGroup
+        variant="ghost"
+        size="sm"
+        colorPalette={isLight ? 'black' : 'blue'}>
         <PaginationLink page="prev" disabled={pageNumber === 1}>
           {HiChevronLeft({})}
         </PaginationLink>
