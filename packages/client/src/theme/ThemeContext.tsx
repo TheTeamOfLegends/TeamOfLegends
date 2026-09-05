@@ -9,36 +9,29 @@ type ThemeContextType = {
 
 export const ThemeContext = createContext<ThemeContextType>({
   theme: 'light',
-  changeTheme: () => Promise.resolve(),
+  changeTheme: () => undefined,
 })
 
 type ThemeProviderProps = {
   children: ReactNode
 }
 
+const THEME_STORAGE_KEY = 'theme'
+
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>('dark')
 
-  // Получаем тему с сервера
+  // Временно вместо сервера используем localStorage
   useEffect(() => {
-    // fetch("/api/profile")
-    //   .then((res) => res.json())
-    //   .then((data) => {
-    //     setTheme(data.theme);
-    //   });
+    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY)
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      setTheme(savedTheme)
+    }
   }, [])
 
-  // Меняем тему и сохраняем на сервере
   const changeTheme = (newTheme: Theme) => {
     setTheme(newTheme)
-
-    // await fetch("/api/profile", {
-    //   method: "PATCH",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({ theme: newTheme }),
-    // });
+    localStorage.setItem(THEME_STORAGE_KEY, newTheme)
   }
 
   return (
