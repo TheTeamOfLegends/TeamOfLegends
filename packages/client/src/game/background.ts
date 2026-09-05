@@ -45,10 +45,10 @@ export const drawBackground = (
 
   const gradient = ctx.createLinearGradient(0, 0, 0, height)
   if (theme === 'light') {
-    gradient.addColorStop(0, '#5ac7d5')
-    gradient.addColorStop(0.3, '#1d9fb1')
-    gradient.addColorStop(0.6, '#218390')
-    gradient.addColorStop(1, '#233f75')
+    gradient.addColorStop(0, '#90a4ea')
+    gradient.addColorStop(0.3, '#3a79d1')
+    gradient.addColorStop(0.6, '#3065aa')
+    gradient.addColorStop(1, '#34528e')
   } else {
     gradient.addColorStop(0, '#0a1a4d')
     gradient.addColorStop(0.3, '#1a2d5e')

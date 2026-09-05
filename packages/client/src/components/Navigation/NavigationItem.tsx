@@ -1,5 +1,7 @@
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { Link } from 'react-router-dom'
+import { useContext } from 'react'
+import { ThemeContext } from '../../theme/ThemeContext'
 
 type Props = {
   href: string
@@ -9,6 +11,8 @@ type Props = {
 }
 
 export const NavigationItem = ({ href, icon, title, accentColor }: Props) => {
+  const { theme } = useContext(ThemeContext)
+  const isLight = theme === 'light'
   return (
     <Flex
       asChild
@@ -16,7 +20,7 @@ export const NavigationItem = ({ href, icon, title, accentColor }: Props) => {
       justifyContent={{ base: 'flex-start', sm: 'center' }}
       p={{ base: 2, sm: 6 }}
       borderRadius="xl"
-      bg="rgba(255,255,255,0.08)"
+      bg={isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)'}
       backdropFilter="blur(10px)"
       border="1px solid"
       borderColor={
@@ -26,7 +30,7 @@ export const NavigationItem = ({ href, icon, title, accentColor }: Props) => {
       transition="0.2s"
       _hover={{
         transform: 'translateY(-4px)',
-        bg: 'rgba(255,255,255,0.15)',
+        bg: isLight ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)',
       }}>
       <Link to={href}>
         <Flex

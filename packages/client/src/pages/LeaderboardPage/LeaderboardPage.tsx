@@ -18,6 +18,8 @@ import {
 import { useProfileStore } from '../../stores/profileStore'
 import { pageContentStyles, pageShellStyles } from './styles'
 import { delay } from '@/components/Leaderboard/utils'
+import { useContext } from 'react'
+import { ThemeContext } from '../../theme/ThemeContext'
 
 const REQUEST_DELAY_MS = 200
 const INITIAL_CURSOR = 0
@@ -32,6 +34,8 @@ export const LeaderboardPage = () => {
   const [lastPageLength, setLastPageLength] = useState(0)
   const [leaderboard, setLeaderboard] =
     useState<GetLeaderboardResponse>(INITIAL_LEADERBOARD)
+  const { theme } = useContext(ThemeContext)
+  const isLight = theme === 'light'
 
   useEffect(() => {
     const loadLeaderboard = async () => {
@@ -109,7 +113,12 @@ export const LeaderboardPage = () => {
 
       <Box {...pageShellStyles}>
         <Header />
-        <Flex {...pageContentStyles}>
+        <Flex
+          {...pageContentStyles}
+          bg={isLight ? "url('/hero-bg-l.png')" : "url('/hero-bg.png')"}
+          backgroundSize="cover"
+          backgroundPosition="center"
+          backgroundRepeat="no-repeat">
           <LeaderboardPanel>
             <LeaderboardTable entries={entries} isLoading={isLoading} />
 

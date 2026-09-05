@@ -5,7 +5,6 @@ import { ThemeContext } from '../../../theme/ThemeContext'
 
 export const ThemeButton = (props: IconButtonProps) => {
   const { theme, changeTheme } = useContext(ThemeContext)
-
   const isLight = theme === 'light'
 
   return (

@@ -13,7 +13,6 @@ export const ProfileItem = ({ title, value }: ProfileItemProps) => {
       align="center"
       fontSize="13px"
       w="100%"
-      color="fg.muted"
       borderBottomWidth={1}
       _last={{
         borderBottom: 'none',
