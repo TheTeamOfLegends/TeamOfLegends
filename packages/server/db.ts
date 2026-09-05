@@ -1,5 +1,6 @@
 import { Dialect, Sequelize } from 'sequelize'
 import dbConfig from './sequelize.config.js'
+import { initUserThemeModels } from './src/features/theme'
 
 const env = process.env.NODE_ENV === 'production' ? 'production' : 'development'
 const activeConfig = dbConfig[env] ?? dbConfig.development
@@ -31,8 +32,12 @@ export const sequelize = new Sequelize(
 export const createClientAndConnect = async () => {
   try {
     const [results] = await sequelize.query('SELECT NOW()')
-    const row = (results as { now?: string }[])[0]
-    console.log('  ➜ 🎸 Connected to the database at:', row?.now)
+    console.log(
+      '  ➜ 🎸 Connected to the database at:',
+      (results as [{ now: string }])[0].now!
+    )
+
+    initUserThemeModels()
   } catch (e) {
     console.error(
       '  ➜ 🎸 Database is not available on %s:%s. Start Postgres, e.g. `docker compose up postgres -d`',
