@@ -1,14 +1,12 @@
-import { useContext } from 'react'
-import { Button, Flex } from '@chakra-ui/react'
+import { Flex } from '@chakra-ui/react'
 import { Link, useLocation } from 'react-router-dom'
 import { Logo } from '../Logo/Logo'
 import { GameButton } from '../ui/GameButton/GameButton'
-import { ThemeContext } from '../../theme/ThemeContext'
+import { ThemeButton } from '../ui/ThemeButton/ThemeButton'
 
 export const Header = () => {
   const { pathname } = useLocation()
   const isGamePage = pathname === '/game'
-  const { theme, changeTheme } = useContext(ThemeContext)
 
   return (
     <Flex
@@ -23,12 +21,7 @@ export const Header = () => {
       direction={{ base: 'column', sm: 'row' }}
       py={{ base: '20px', sm: '0' }}>
       <Logo />
-      {isGamePage && (
-        <Button
-          onClick={() => changeTheme(theme === 'light' ? 'dark' : 'light')}>
-          SWAP
-        </Button>
-      )}
+      {isGamePage && <ThemeButton />}
       {!isGamePage && (
         <GameButton
           asChild

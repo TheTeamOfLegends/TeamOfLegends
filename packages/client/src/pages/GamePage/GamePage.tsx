@@ -170,7 +170,7 @@ export const GamePage = () => {
   }
 
   return (
-    <Box minH="100vh" bg="#080B2C" display="flex" flexDir="column">
+    <Box minH="100vh" maxH="100vh" bg="#080B2C" display="flex" flexDir="column">
       <Helmet>
         <meta charSet="utf-8" />
         <title>Игра</title>
