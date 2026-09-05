@@ -26,4 +26,9 @@ User.hasMany(Topic, { foreignKey: 'author' })
 
 User.hasMany(Comment, { foreignKey: 'author' })
 
+Topic.hasMany(Reaction, { foreignKey: 'topicId' })
+User.hasMany(Reaction, { foreignKey: 'userId' })
+Reaction.belongsTo(Topic, { foreignKey: 'topicId' })
+Reaction.belongsTo(User, { foreignKey: 'userId' })
+
 export { User, Topic, Comment, Reaction }

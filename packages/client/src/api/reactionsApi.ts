@@ -1,19 +1,9 @@
 import { SERVER_HOST } from '@/constants'
 import { Reactions } from '@/types/reaction'
 
-const getReactions = async (
-  target: { topicId: number } | { commentId: number }
-): Promise<Reactions> => {
-  const params = new URLSearchParams()
-
-  if ('topicId' in target) {
-    params.set('topicId', String(target.topicId))
-  } else {
-    params.set('commentId', String(target.commentId))
-  }
-
+const getTopicReactions = async (topicId: number): Promise<Reactions> => {
   const response = await fetch(
-    `${SERVER_HOST}/forum/reactions?${params.toString()}`
+    `${SERVER_HOST}/forum/topic/${topicId}/reactions`
   )
 
   if (!response.ok) {
@@ -36,94 +26,43 @@ const getReactions = async (
   }
 }
 
-export const setCommentReaction = async (
-  commentId: number,
-  emoji: string,
-  userId: number
-): Promise<Reactions> => {
-  const response = await fetch(`${SERVER_HOST}/forum/reaction`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      emoji,
-      userId,
-      commentId,
-    }),
-  })
-
-  if (!response.ok) {
-    throw new Error('Не удалось изменить реакцию')
-  }
-
-  return getReactions({ commentId })
-}
-
-export const removeCommentReaction = async (
-  commentId: number,
-  userId: number
-): Promise<Reactions> => {
-  const response = await fetch(`${SERVER_HOST}/forum/reaction`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      userId,
-      commentId,
-    }),
-  })
-
-  if (!response.ok) {
-    throw new Error('Не удалось удалить реакцию')
-  }
-
-  return getReactions({ commentId })
-}
-
 export const setTopicReaction = async (
   topicId: number,
-  emoji: string,
-  userId: number
+  emoji: string
 ): Promise<Reactions> => {
-  const response = await fetch(`${SERVER_HOST}/forum/reaction`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      emoji,
-      userId,
-      topicId,
-    }),
-  })
+  const response = await fetch(
+    `${SERVER_HOST}/forum/topic/${topicId}/reactions`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        emoji,
+      }),
+    }
+  )
 
   if (!response.ok) {
     throw new Error('Не удалось изменить реакцию')
   }
 
-  return getReactions({ topicId })
+  return getTopicReactions(topicId)
 }
 
 export const removeTopicReaction = async (
-  topicId: number,
-  userId: number
+  topicId: number
 ): Promise<Reactions> => {
-  const response = await fetch(`${SERVER_HOST}/forum/reaction`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      userId,
-      topicId,
-    }),
-  })
+  const response = await fetch(
+    `${SERVER_HOST}/forum/topic/${topicId}/reactions`,
+    {
+      method: 'DELETE',
+    }
+  )
 
   if (!response.ok) {
     throw new Error('Не удалось удалить реакцию')
   }
 
-  return getReactions({ topicId })
+  return getTopicReactions(topicId)
 }

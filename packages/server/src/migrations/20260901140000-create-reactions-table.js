@@ -3,6 +3,7 @@
 const tableName = 'reactions'
 
 /** @type {import('sequelize-cli').Migration} */
+
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable(tableName, {
@@ -33,21 +34,9 @@ module.exports = {
       topicId: {
         field: 'topic_id',
         type: Sequelize.INTEGER,
-        allowNull: true,
+        allowNull: false,
         references: {
           model: 'topics',
-          key: 'id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
-      },
-
-      commentId: {
-        field: 'comment_id',
-        type: Sequelize.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'comments',
           key: 'id',
         },
         onUpdate: 'CASCADE',
@@ -68,18 +57,19 @@ module.exports = {
         defaultValue: Sequelize.literal('NOW()'),
       },
     })
+
     await queryInterface.addIndex(tableName, ['user_id', 'topic_id'], {
       name: `${tableName}_user_id_topic_id_idx`,
-      unique: true,
-    })
-
-    await queryInterface.addIndex(tableName, ['user_id', 'comment_id'], {
-      name: `${tableName}_user_id_comment_id_idx`,
       unique: true,
     })
   },
 
   async down(queryInterface) {
+    await queryInterface.removeIndex(
+      tableName,
+      `${tableName}_user_id_topic_id_idx`
+    )
+
     await queryInterface.dropTable(tableName)
   },
 }

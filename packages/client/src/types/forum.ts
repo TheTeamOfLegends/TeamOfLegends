@@ -10,9 +10,9 @@ export type ForumComment = {
   author: ForumAuthor
   body: string
   createdAt: string | null | undefined
-  reactions: Reaction[]
 }
 
 export type Topic = ForumComment & {
   title: string
+  reactions: Reaction[]
 }

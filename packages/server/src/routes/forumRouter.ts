@@ -1,8 +1,9 @@
 import express from 'express'
-import { Topic, Comment, Reaction } from '../models'
+
+import { Topic, Comment } from '../models'
 import {
-  setReaction,
-  removeReaction,
+  setTopicReaction,
+  removeTopicReaction,
   getReactions,
 } from '../controllers/reactionsController'
 
@@ -10,9 +11,10 @@ const forumRouter = express.Router()
 
 /**
  * Получить топики и общее количество топиков
+ *
  * Параметры get запроса:
  * limit: number Ограничить выборку количеством => optional
- * osset: number Cмещение по выборке => optional
+ * offset: number Смещение по выборке => optional
  *
  * Возвращаемое значение: объект с ключами rows, count
  */
@@ -21,29 +23,28 @@ forumRouter.get('/topics', async (req, res) => {
     limit: req.query.limit,
     offset: req.query.offset,
   })
+
   res.json(response)
 })
 
 /**
  * Создание нового топика
- * Парамерты post запроса - объект с ключами:
- * title: string Заголовок топика => required
- * body: string Содержимое топика => required
- * userId: number Автор топика => required
- * isSticky: boolean На первой странице => optional
  */
 forumRouter.post('/topic/create', async (req, res) => {
   try {
     const newTopic = await Topic.createNew({
       title: req.body.title,
       body: req.body.body,
-      author: req.body.userId,
+      author: req.user.id,
       isSticky: req.body.isSticky,
     })
+
     res.status(201).json({ newTopic })
   } catch (error) {
     console.log(error)
-    res.status(400).json({ error: 'Не удалось создать новый топик форума' })
+    res.status(400).json({
+      error: 'Не удалось создать новый топик форума',
+    })
   }
 })
 
@@ -53,6 +54,7 @@ forumRouter.post('/topic/create', async (req, res) => {
 forumRouter.get('/topic/:id', async (req, res) => {
   try {
     const id = req.params.id
+
     const topic = await Topic.findByPk(id)
 
     if (topic === null) {
@@ -60,13 +62,8 @@ forumRouter.get('/topic/:id', async (req, res) => {
       return
     }
 
-    const reactions = await Reaction.getReactionSummary({
-      topicId: Number(id),
-    })
-
     res.json({
       topic,
-      reactions,
     })
   } catch (error) {
     console.log(error)
@@ -80,7 +77,9 @@ forumRouter.get('/topic/:id', async (req, res) => {
 forumRouter.delete('/topic/:id', async (req, res) => {
   try {
     const id = req.params.id
+
     await Topic.destroyByPk(id)
+
     res.status(200).json('Топик удален')
   } catch (error) {
     console.log(error)
@@ -99,6 +98,7 @@ forumRouter.put('/topic', async (req, res) => {
       body: req.body.body,
       isSticky: req.body.isSticky,
     })
+
     res.status(200).json({ topic })
   } catch (error) {
     console.log(error)
@@ -108,20 +108,16 @@ forumRouter.put('/topic', async (req, res) => {
 
 /**
  * Создание нового комментария
- * Парамерты post запроса - объект с ключами:
- * topicId: number Родительский топик => required
- * body: string Содержимое комментария => required
- * userId: number Автор комментария => required
- * parentId: number Родительский комментарий => optional
  */
 forumRouter.post('/comment/create', async (req, res) => {
   try {
     const newComment = await Comment.createNew({
       topicId: req.body.topicId,
-      author: req.body.userId,
+      author: req.user.id,
       body: req.body.body,
       parentId: req.body.parentId,
     })
+
     res.status(201).json({ newComment })
   } catch (error) {
     console.log(error)
@@ -135,7 +131,9 @@ forumRouter.post('/comment/create', async (req, res) => {
 forumRouter.delete('/comment/:id', async (req, res) => {
   try {
     const id = req.params.id
+
     await Comment.destroyByPk(id)
+
     res.status(200).json('Комментарий удален')
   } catch (error) {
     console.log(error)
@@ -152,6 +150,7 @@ forumRouter.put('/comment', async (req, res) => {
       id: req.body.id,
       body: req.body.body,
     })
+
     res.status(200).json({ comment })
   } catch (error) {
     console.log(error)
@@ -161,14 +160,13 @@ forumRouter.put('/comment', async (req, res) => {
 
 /**
  * Получить комментарии для топика
- * Параметры get запроса:
+ *
+ * Параметры:
  * 1. view: one of [plain, tree] Тип выборки: простая или древовидная => optional, default: tree
  * 2. limit: number Ограничить выборку количеством => optional
- * 3. offset: number Cмещение по выборке => optional
+ * 3. offset: number Смещение по выборке => optional
  *
  * Возвращаемое значение: объект с ключами rows, count
- * Для вида tree каждый комментарий будет содержать обязательный ключ replies с дочерними комментариями
- * Для вида tree count будет равен количеству верхнеуровних комментариев
  */
 forumRouter.get('/topic/:id/comments', async (req, res) => {
   try {
@@ -181,15 +179,8 @@ forumRouter.get('/topic/:id/comments', async (req, res) => {
       view: req.query.view,
     })
 
-    const commentIds = comments.rows
-      .map(comment => comment.id)
-      .filter((id): id is number => id !== undefined)
-
-    const reactions = await Reaction.getCommentReactionSummary(commentIds)
-
     res.json({
       comments,
-      reactions,
     })
   } catch (error) {
     console.log(error)
@@ -197,10 +188,19 @@ forumRouter.get('/topic/:id/comments', async (req, res) => {
   }
 })
 
-forumRouter.post('/reaction', setReaction)
+/**
+ * Установить реакцию на топик
+ */
+forumRouter.post('/topic/:id/reactions', setTopicReaction)
 
-forumRouter.delete('/reaction', removeReaction)
+/**
+ * Удалить реакцию с топика
+ */
+forumRouter.delete('/topic/:id/reactions', removeTopicReaction)
 
-forumRouter.get('/reactions', getReactions)
+/**
+ * Получить реакции топика
+ */
+forumRouter.get('/topic/:id/reactions', getReactions)
 
 export default forumRouter

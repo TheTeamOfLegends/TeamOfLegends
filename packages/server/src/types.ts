@@ -36,6 +36,5 @@ export type ForumReaction = {
   id?: number
   emoji: string
   userId: number
-  topicId?: number | null
-  commentId?: number | null
+  topicId: number
 }

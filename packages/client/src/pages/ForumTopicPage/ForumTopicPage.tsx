@@ -58,7 +58,6 @@ export const ForumTopicPage = () => {
   const profileUser = useProfileStore(s => s.user)
 
   const setTopicReaction = useForumTopicStore(s => s.setTopicReaction)
-  const setCommentReaction = useForumTopicStore(s => s.setCommentReaction)
 
   if (isLoading) {
     return (
@@ -105,10 +104,6 @@ export const ForumTopicPage = () => {
         {itemsToShow.map(comment => (
           <ForumTopicCard author={comment.author} key={comment.id}>
             <ForumTopicCardBody {...comment} />
-            <ReactionBar
-              reactions={comment.reactions}
-              onReactionClick={emoji => setCommentReaction(comment.id, emoji)}
-            />
           </ForumTopicCard>
         ))}
         <CommentForm author={commentAuthor} topicId={topic.id} />
