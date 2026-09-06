@@ -1,8 +1,8 @@
 import { Helmet } from 'react-helmet-async'
 import { Header } from '../../components/Header/Header'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { PageInitArgs } from '../../types'
-import { Container, VStack, Flex, Text } from '@chakra-ui/react'
+import { Button, Container, VStack, Flex, Text } from '@chakra-ui/react'
 import { usePage } from '../../hooks/usePage'
 import {
   ForumTopicCard,
@@ -22,6 +22,7 @@ interface ContainerProps {
 
 const ForumTopicContainer = (props: ContainerProps) => {
   const MAX_TITLE_LENGTH = 60
+  const navigate = useNavigate()
 
   const title =
     props.title.length > MAX_TITLE_LENGTH
@@ -38,6 +39,11 @@ const ForumTopicContainer = (props: ContainerProps) => {
       <Flex flexDirection={'column'} height="100vh">
         <Header />
         <Container p={'10'} bg={'gray.50'} flexGrow={1}>
+          <Flex mb={4}>
+            <Button colorPalette={'orange'} onClick={() => navigate('/forum')}>
+              Вернуться
+            </Button>
+          </Flex>
           {props.children}
         </Container>
       </Flex>
@@ -65,7 +71,11 @@ export const ForumTopicPage = () => {
   }
 
   if (topic === null) {
-    throw new Error('Не удалось загрузить данные')
+    return (
+      <ForumTopicContainer title="Топик не найден">
+        <Text>Не удалось загрузить топик</Text>
+      </ForumTopicContainer>
+    )
   }
 
   const itemsLength = comments.length + 1

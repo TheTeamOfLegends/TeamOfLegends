@@ -12,11 +12,16 @@ const forumRouter = express.Router()
  * Возвращаемое значение: объект с ключами rows, count
  */
 forumRouter.get('/topics', async (req, res) => {
-  const response = await Topic.getWithCountAll({
-    limit: req.query.limit,
-    offset: req.query.offset,
-  })
-  res.json(response)
+  try {
+    const response = await Topic.getWithCountAll({
+      limit: req.query.limit,
+      offset: req.query.offset,
+    })
+    res.json(response)
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: 'Не удалось получить топики форума' })
+  }
 })
 
 /**

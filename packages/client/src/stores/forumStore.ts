@@ -1,36 +1,36 @@
 import { create } from 'zustand'
 
-import { SERVER_HOST } from '../constants'
-import { topicsMock } from '../pages/ForumPage/topicsMock'
+import { getTopics } from '../api/forumApi'
 import { Topic } from '../types/forum'
 
 interface ForumState {
   topics: Topic[] | null
   isLoading: boolean
-  loadForum: () => Promise<void>
+  loadForum: (force?: boolean) => Promise<void>
+  resetForum: () => void
 }
 
 export const useForumStore = create<ForumState>((set, get) => ({
   topics: null,
   isLoading: false,
 
-  async loadForum() {
-    if (get().topics) {
+  resetForum() {
+    set({ topics: null, isLoading: false })
+  },
+
+  async loadForum(force = false) {
+    if (!force && get().topics) {
       return
     }
 
-    set({ topics: [], isLoading: true })
+    set({ isLoading: true })
 
     try {
-      const response = await fetch(`${SERVER_HOST}/api/forum`)
-      if (!response.ok) {
-        throw new Error('Forum request failed')
-      }
-      const topics = (await response.json()) as Topic[]
+      const topics = await getTopics()
       set({ topics, isLoading: false })
-    } catch {
-      // TODO удалить mock данные после интеграции с API
-      set({ topics: topicsMock, isLoading: false })
+    } catch (e) {
+      set({ topics: [], isLoading: false })
+      throw e
     }
   },
 }))
