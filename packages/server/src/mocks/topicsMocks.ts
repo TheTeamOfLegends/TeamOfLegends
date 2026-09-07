@@ -1,4 +1,4 @@
-import { ForumRelatedId, ForumUser, DbTopic, DbComment } from '../types'
+import type { ForumRelatedId, ForumUser, DbTopic, DbComment } from '../types'
 
 type Comment = {
   body: string
