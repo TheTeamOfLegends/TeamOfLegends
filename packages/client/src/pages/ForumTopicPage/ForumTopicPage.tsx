@@ -14,6 +14,8 @@ import { ReactNode } from 'react'
 import { CommentForm } from '../../components/CommentForm/CommentForm'
 import { useForumTopicStore } from '../../stores/forumTopicStore'
 import { useProfileStore } from '../../stores/profileStore'
+import { useContext } from 'react'
+import { ThemeContext } from '../../theme/ThemeContext'
 
 interface ContainerProps {
   title: string
@@ -22,6 +24,9 @@ interface ContainerProps {
 
 const ForumTopicContainer = (props: ContainerProps) => {
   const MAX_TITLE_LENGTH = 60
+
+  const { theme } = useContext(ThemeContext)
+  const isLight = theme === 'light'
 
   const title =
     props.title.length > MAX_TITLE_LENGTH
@@ -37,7 +42,13 @@ const ForumTopicContainer = (props: ContainerProps) => {
       </Helmet>
       <Flex flexDirection={'column'} height="100vh">
         <Header />
-        <Container p={'10'} bg={'gray.50'} flexGrow={1}>
+        <Container
+          p={'10'}
+          m={0}
+          maxW="none"
+          bg={isLight ? 'white' : '#080B2C'}
+          color={isLight ? 'black' : 'white'}
+          flexGrow={1}>
           {props.children}
         </Container>
       </Flex>

@@ -50,6 +50,7 @@ import type {
   StartGameOptions,
   Trampoline,
 } from './types'
+import type { Theme } from '../theme/ThemeContext'
 
 const createPlayer = (width: number, height: number): Player => ({
   x: width / 2,
@@ -80,7 +81,7 @@ const getMousePos = (
 
 export function startGame(
   canvas: HTMLCanvasElement,
-  options: StartGameOptions = {}
+  options: StartGameOptions
 ): GameController {
   loadGameAssets()
 
@@ -253,8 +254,14 @@ export function startGame(
 
   const renderFrame = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    drawBackground(ctx, starryNight, canvas.width, canvas.height)
-    drawPlatforms(ctx, platforms)
+    drawBackground(
+      ctx,
+      starryNight,
+      canvas.width,
+      canvas.height,
+      options.theme.current as Theme
+    )
+    drawPlatforms(ctx, platforms, options.theme.current as Theme)
     drawParticles(ctx, particles)
     drawMouseLine(ctx, player, mouseX, mouseY)
     drawPlayerGun(ctx, player, mouseX, mouseY)

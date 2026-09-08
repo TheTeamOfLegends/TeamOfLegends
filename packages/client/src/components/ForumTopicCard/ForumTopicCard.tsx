@@ -1,7 +1,8 @@
 import { Avatar, Box, Flex, SimpleGrid, VStack } from '@chakra-ui/react'
 import { dateFormatter } from '../../pages/ForumPage/ForumPage'
-import { ReactNode } from 'react'
+import { ReactNode, useContext } from 'react'
 import { ForumAuthor, ForumComment, Topic } from '../../types/forum'
+import { ThemeContext } from '../../theme/ThemeContext'
 
 // Переделать на Avatar.Image когда его починяет
 const AvatarImage = Avatar.Image as React.FC<
@@ -14,11 +15,14 @@ interface ForumTopicCardProps {
 }
 
 export const ForumTopicCard = ({ author, children }: ForumTopicCardProps) => {
+  const { theme } = useContext(ThemeContext)
+  const isLight = theme === 'light'
+
   return (
     <SimpleGrid
       gridTemplateColumns={'180px 1fr'}
       width={'100%'}
-      bg={'gray.100'}
+      bg={isLight ? 'white' : '#080B2C'}
       py={8}>
       <VStack borderRightWidth="1px" borderRightColor="pink.500">
         <Avatar.Root boxSize="70px">

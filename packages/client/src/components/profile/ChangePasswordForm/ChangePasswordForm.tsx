@@ -43,7 +43,7 @@ export const ChangePasswordForm = () => {
   }
 
   return (
-    <Stack maxWidth="510px" w="full" fontSize="13px" color="fg.muted">
+    <Stack maxWidth="510px" w="full" fontSize="13px">
       <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%' }}>
         <VStack>
           <PasswordField
