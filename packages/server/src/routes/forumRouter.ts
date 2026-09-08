@@ -12,11 +12,16 @@ const forumRouter = express.Router()
  * Возвращаемое значение: объект с ключами rows, count
  */
 forumRouter.get('/topics', async (req, res) => {
-  const response = await Topic.getWithCountAll({
-    limit: req.query.limit,
-    offset: req.query.offset,
-  })
-  res.json(response)
+  try {
+    const response = await Topic.getWithCountAll({
+      limit: req.query.limit,
+      offset: req.query.offset,
+    })
+    res.json(response)
+  } catch (error) {
+    console.log(error)
+    res.status(404).json('Не удалось найти данные')
+  }
 })
 
 /**
@@ -32,7 +37,7 @@ forumRouter.post('/topic/create', async (req, res) => {
     const newTopic = await Topic.createNew({
       title: req.body.title,
       body: req.body.body,
-      author: req.body.userId,
+      author: req.user?.id,
       isSticky: req.body.isSticky,
     })
     res.status(201).json({ newTopic })
@@ -106,7 +111,7 @@ forumRouter.post('/comment/create', async (req, res) => {
   try {
     const newComment = await Comment.createNew({
       topicId: req.body.topicId,
-      author: req.body.userId,
+      author: req.user?.id,
       body: req.body.body,
       parentId: req.body.parentId,
     })
