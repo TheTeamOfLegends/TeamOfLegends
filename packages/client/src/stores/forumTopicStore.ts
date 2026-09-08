@@ -35,57 +35,56 @@ export const useForumTopicStore = create<ForumTopicState>((set, get) => ({
       isLoading: true,
     })
 
+    const [topicResponse, commentsResponse] = await Promise.all([
+      fetch(`${SERVER_HOST}/forum/topic/${id}`),
+      fetch(`${SERVER_HOST}/forum/topic/${id}/comments`),
+    ])
+
+    if (!topicResponse.ok || !commentsResponse.ok) {
+      throw new Error('Forum topic request failed')
+    }
+
+    const topicData = (await topicResponse.json()) as {
+      topic: Topic
+    }
+
+    const commentsData = (await commentsResponse.json()) as {
+      comments: {
+        count: number
+        rows: ForumComment[]
+      }
+    }
+
+    let reactions: Topic['reactions'] = []
+
     try {
-      const [topicResponse, commentsResponse, reactionsResponse] =
-        await Promise.all([
-          fetch(`${SERVER_HOST}/forum/topic/${id}`),
-          fetch(`${SERVER_HOST}/forum/topic/${id}/comments`),
-          fetch(`${SERVER_HOST}/forum/topic/${id}/reactions`),
-        ])
+      const reactionsResponse = await fetch(
+        `${SERVER_HOST}/forum/topic/${id}/reactions`
+      )
 
-      if (!topicResponse.ok || !commentsResponse.ok || !reactionsResponse.ok) {
-        throw new Error('Forum topic request failed')
-      }
-
-      const topicData = (await topicResponse.json()) as {
-        topic: Topic
-      }
-
-      const commentsData = (await commentsResponse.json()) as {
-        comments: {
-          count: number
-          rows: ForumComment[]
-        }
+      if (!reactionsResponse.ok) {
+        throw new Error('Failed to load reactions')
       }
 
       const reactionsData = (await reactionsResponse.json()) as {
-        reactions: {
-          emoji: string
-          count: number
-        }[]
+        reactions: Topic['reactions']
       }
 
-      const topic: Topic = {
-        ...topicData.topic,
-        reactions: reactionsData.reactions.map(reaction => ({
-          ...reaction,
-          reactedByMe: false,
-        })),
-      }
-
-      set({
-        topic,
-        comments: commentsData.comments.rows,
-        isLoading: false,
-      })
+      reactions = reactionsData.reactions
     } catch {
-      // TODO удалить mock данные после интеграции с API
-      set({
-        topic: findTopic(id),
-        comments: commentsMock(id),
-        isLoading: false,
-      })
+      reactions = []
     }
+
+    const topic: Topic = {
+      ...topicData.topic,
+      reactions,
+    }
+
+    set({
+      topic,
+      comments: commentsData.comments.rows,
+      isLoading: false,
+    })
   },
 
   async setTopicReaction(topicId, emoji) {

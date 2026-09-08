@@ -4,6 +4,18 @@ import { sequelize } from '../../db'
 import type { ForumReaction } from '../types'
 import { sanitizeString, sanitizeNumber } from '../utils/sanitizeData'
 
+const ALLOWED_REACTIONS = [
+  '😀',
+  '😂',
+  '😍',
+  '😢',
+  '😡',
+  '👍',
+  '❤️',
+  '🎉',
+  '🔥',
+  '👀',
+]
 export class Reaction extends Model<ForumReaction> implements ForumReaction {
   id!: number
   emoji!: string
@@ -17,7 +29,12 @@ export class Reaction extends Model<ForumReaction> implements ForumReaction {
     const userId = sanitizeNumber(data.userId)
     const topicId = sanitizeNumber(data.topicId)
 
-    if (emoji === null || userId === null || topicId === null) {
+    if (
+      emoji === null ||
+      !ALLOWED_REACTIONS.includes(emoji) ||
+      userId === null ||
+      topicId === null
+    ) {
       throw new Error('Ошибка в переданных данных')
     }
 
