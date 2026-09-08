@@ -5,6 +5,9 @@ export class ServerError extends Error {
     super(message)
 
     this.statusCode = statusCode
-    this.stack = stack
+
+    if (stack) {
+      this.stack = stack
+    }
   }
 }

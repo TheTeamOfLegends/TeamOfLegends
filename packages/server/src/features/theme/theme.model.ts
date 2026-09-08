@@ -14,7 +14,7 @@ export class ThemeUser extends Model<
 > {
   declare id: CreationOptional<number>
   declare userId: string
-  declare userThemes?: NonAttribute<UserTheme[]>
+  declare userTheme?: NonAttribute<UserTheme>
 
   static initModel(sequelize: Sequelize): void {
     ThemeUser.init(
@@ -27,6 +27,7 @@ export class ThemeUser extends Model<
         userId: {
           type: DataTypes.STRING,
           allowNull: false,
+          unique: true,
         },
       },
       {

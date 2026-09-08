@@ -48,7 +48,7 @@ export const getUserTheme = async (
     return null
   }
 
-  const themeId = userWithTheme.userThemes?.[0]?.themeId
+  const themeId = userWithTheme.userTheme?.themeId
   const activeUserTheme = themeId && (await repository.findThemeById(themeId))
   const theme = activeUserTheme ? activeUserTheme?.theme : undefined
 
