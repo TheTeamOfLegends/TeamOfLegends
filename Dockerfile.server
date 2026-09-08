@@ -1,11 +1,11 @@
 ARG NODE_VERSION=20
 ARG SERVER_PORT=3001
 
-FROM node:$NODE_VERSION-buster as base
+FROM node:$NODE_VERSION-bookworm AS base
 
 WORKDIR /app
 
-FROM base as builder
+FROM base AS builder
 
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
@@ -16,12 +16,21 @@ RUN yarn lerna bootstrap
 RUN rm -rf /app/packages/server/dist/ && yarn build --scope=server
 
 
-FROM node:$NODE_VERSION-buster-slim as production
+FROM node:$NODE_VERSION-bookworm-slim AS production
 WORKDIR /app
 
-COPY --from=builder /app/packages/server/dist/ /app/
-COPY --from=builder /app/packages/server/package.json /app/package.json
-RUN yarn install --production=true
+ENV NODE_ENV=production
+
+# Собранный сервер (миграции/модели уже в dist/src)
+COPY --from=builder /app/packages/server/dist/ ./
+COPY --from=builder /app/packages/server/package.json ./package.json
+COPY --from=builder /app/packages/server/.sequelizerc ./.sequelizerc
+COPY --from=builder /app/packages/server/docker-entrypoint.sh ./docker-entrypoint.sh
+# lockfile нужен, иначе yarn пишет "No lockfile found"
+COPY --from=builder /app/yarn.lock ./yarn.lock
+
+RUN yarn install --production=true \
+  && chmod +x /app/docker-entrypoint.sh
 
 EXPOSE $SERVER_PORT
-CMD [ "node", "/app/index.js" ]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

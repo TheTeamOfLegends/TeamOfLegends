@@ -74,8 +74,8 @@ docker compose up --build
 
 Поднимутся три сервиса (с зависимостями):
 
-1. **postgres** — БД (стартует первой, healthcheck)
-2. **server** — Node API (ждёт healthy postgres, ходит на хост `postgres`)
+1. **postgres** — БД (стартует первой, healthcheck). Снаружи порт `POSTGRES_EXTERNAL_PORT` (по умолчанию **5441→5432**), чтобы не пересекаться с локальным Postgres
+2. **server** — Node API (ждёт healthy postgres, при старте выполняет `sequelize db:migrate`, ходит на `postgres:5432`)
 3. **client** — SSR/клиент (ждёт healthy server)
 
 Только БД:

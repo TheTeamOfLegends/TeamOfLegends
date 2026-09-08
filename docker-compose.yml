@@ -69,8 +69,8 @@ services:
     image: postgres:14
     restart: always
     ports:
-      # Снаружи: POSTGRES_PORT из .env → внутри контейнера Postgres всегда 5432
-      - '${POSTGRES_PORT}:5432'
+      # Снаружи: POSTGRES_EXTERNAL_PORT (хост) → внутри контейнера всегда 5432
+      - '${POSTGRES_EXTERNAL_PORT:-5441}:5432'
     env_file:
       - .env
     environment:
