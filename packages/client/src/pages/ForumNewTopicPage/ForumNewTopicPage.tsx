@@ -10,7 +10,16 @@ import {
   Button,
   Flex,
 } from '@chakra-ui/react'
-import { ActionFunctionArgs, Form, useNavigate } from 'react-router-dom'
+import {
+  ActionFunctionArgs,
+  Form,
+  redirect,
+  useNavigate,
+} from 'react-router-dom'
+import { createTopic } from '../../api/forumApi'
+import { useForumStore } from '../../stores/forumStore'
+import { useForumTopicStore } from '../../stores/forumTopicStore'
+import { useProfileStore } from '../../stores/profileStore'
 
 export const ForumNewTopicPage = () => {
   const navigate = useNavigate()
@@ -58,8 +67,17 @@ export const ForumNewTopicPage = () => {
 
 export const newTopicCreateAction = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData()
+  const title = String(formData.get('title') ?? '').trim()
+  const body = String(formData.get('body') ?? '').trim()
+  const userId = useProfileStore.getState().user?.id
 
-  console.log(Object.fromEntries(formData))
+  if (!title || !body || !userId) {
+    return { status: 'error' }
+  }
 
-  return { status: 'success' }
+  const topic = await createTopic({ title, body, userId })
+  useForumStore.getState().resetForum()
+  await useForumTopicStore.getState().loadTopic(topic.id, true)
+
+  return redirect(`/forum/topic/${topic.id}`)
 }
