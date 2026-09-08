@@ -1,27 +1,34 @@
-import type { Request, RequestHandler, Response } from 'express'
+import type { RequestHandler, Request, Response } from 'express'
 import status from 'http-status'
 import { ServerError } from '../../../shared/errors'
 import * as service from './theme.service'
 
+const VALID_THEMES = ['dark', 'light']
+
 interface SaveUserThemeDto {
   theme: string
-  login?: string
   guestId?: string
 }
 
 export const saveUserTheme: RequestHandler = async (
-  { body }: Request<unknown, SaveUserThemeDto, SaveUserThemeDto>,
+  { body, user }: Request<unknown, SaveUserThemeDto, SaveUserThemeDto>,
   res: Response<SaveUserThemeDto>,
   next
 ): Promise<void> => {
-  if (!body.theme) {
+  const login = user?.login
+  const { guestId, theme } = body
+
+  if (!body.theme || !VALID_THEMES.includes(body.theme)) {
     return next(
-      new ServerError(status.UNPROCESSABLE_ENTITY, 'Field theme is required')
+      new ServerError(
+        status.UNPROCESSABLE_ENTITY,
+        `${body.theme} is invalid theme`
+      )
     )
   }
 
   try {
-    const userTheme = await service.saveUserTheme(body)
+    const userTheme = await service.saveUserTheme({ guestId, theme, login })
 
     res.status(status.OK).json(userTheme)
   } catch (error) {
@@ -30,7 +37,6 @@ export const saveUserTheme: RequestHandler = async (
 }
 
 interface GetUserThemeRequest {
-  login?: string
   guestId?: string
 }
 
@@ -41,11 +47,15 @@ interface GetUserThemeResponse extends GetUserThemeRequest {
 export const getUserTheme: RequestHandler = async (
   {
     query,
+    user,
   }: Request<unknown, GetUserThemeResponse, unknown, GetUserThemeRequest>,
   res: Response<GetUserThemeResponse>,
   next
 ): Promise<void> => {
-  if (!query.login && !query.guestId) {
+  const login = user?.login
+  const { guestId } = query
+
+  if (!login && !guestId) {
     return next(
       new ServerError(
         status.UNPROCESSABLE_ENTITY,
@@ -55,7 +65,7 @@ export const getUserTheme: RequestHandler = async (
   }
 
   try {
-    const userTheme = await service.getUserTheme(query)
+    const userTheme = await service.getUserTheme({ guestId, login })
 
     if (!userTheme) {
       return next(new ServerError(status.NOT_FOUND, 'No user theme found'))

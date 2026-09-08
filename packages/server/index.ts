@@ -56,16 +56,16 @@ app.use(themeRouter)
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- 4-й параметр необходим для регистрации
 const handleError: ErrorRequestHandler = (err, _req, res, _next) => {
-  const body = {
-    message: err.message || 'Internal Server Error',
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-  }
+  console.error('Error message', err.message)
+  console.error('Error stack', err.stack)
 
   if (err instanceof ServerError) {
-    return res.status(err.statusCode).json(body)
+    return res.status(err.statusCode).json({ message: err.message })
   }
 
-  return res.status(status.INTERNAL_SERVER_ERROR).json(body)
+  return res
+    .status(status.INTERNAL_SERVER_ERROR)
+    .json({ message: 'Internal Server Error' })
 }
 
 app.use(handleError)

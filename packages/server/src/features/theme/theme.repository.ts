@@ -56,9 +56,8 @@ export const findUserByUserId = async (
     include: [
       {
         model: UserTheme,
-        as: 'userThemes',
+        as: 'userTheme',
         required: false,
-        limit: 1,
       },
     ],
   })

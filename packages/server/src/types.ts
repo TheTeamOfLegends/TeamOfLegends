@@ -1,3 +1,5 @@
+import 'express'
+
 export type ForumRelatedId = number | null
 
 export type ForumUser = {
@@ -37,4 +39,16 @@ export type ForumReaction = {
   emoji: string
   userId: number
   topicId: number
+}
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      user: {
+        id: number
+        login?: string
+      }
+    }
+  }
 }

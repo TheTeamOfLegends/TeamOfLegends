@@ -3,11 +3,14 @@ import './theme.model'
 import { getUserTheme, saveUserTheme } from './theme.controller'
 import { Theme, ThemeUser, UserTheme } from './theme.model'
 import { sequelize } from '../../../db'
+import { optionalAuthMiddleware } from '../../middleware/optionalAuthMiddleware'
 
 export const useThemeRoutes = (router: Router) => {
   const themesRouter: Router = Router()
 
-  themesRouter.get('/', getUserTheme).put('/', saveUserTheme)
+  themesRouter
+    .get('/', optionalAuthMiddleware, getUserTheme)
+    .put('/', optionalAuthMiddleware, saveUserTheme)
 
   router.use('/v1/theme', themesRouter)
 }
@@ -23,9 +26,9 @@ export const initUserThemeModels = () => {
 
   UserTheme.belongsTo(Theme, { foreignKey: 'themeId' })
 
-  ThemeUser.hasMany(UserTheme, {
+  ThemeUser.hasOne(UserTheme, {
     foreignKey: 'ownerId',
-    as: 'userThemes',
+    as: 'userTheme',
   })
 
   UserTheme.belongsTo(ThemeUser, {
