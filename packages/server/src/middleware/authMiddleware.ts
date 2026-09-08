@@ -8,6 +8,11 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
       .json('Доступ запрещен. Реализация возложена на задачу №4')
   }
 
+  const rawId = req.body.userId || req.query.userId || req.headers['x-user-id']
+  if (rawId) {
+    req.user = { id: Number(rawId) }
+  }
+
   next()
   return
 }
