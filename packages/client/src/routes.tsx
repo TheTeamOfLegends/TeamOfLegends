@@ -6,7 +6,7 @@ import {
 } from '@chakra-ui/react'
 import { CacheProvider } from '@emotion/react'
 import { GlobalStyles } from './theme/GlobalStyles'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import {
   LoaderFunctionArgs,
   Outlet,
@@ -39,13 +39,9 @@ import { SignUpPage } from './pages/SignUpPage/SignUpPage'
 import { ProfilePage, initProfilePage } from './pages/Profile/ProfilePage'
 import { GamePage } from './pages/GamePage/GamePage'
 import { LeaderboardPage } from './pages/LeaderboardPage/LeaderboardPage'
-import { GameOverPage } from './pages/GameOverPage/GameOverPage'
 import { useProfileStore } from './stores/profileStore'
 import { OAuthYandexCallbackPage } from './pages/OAuth/OAuthYandex'
-import {
-  clientEmotionCache,
-  createEmotionCache,
-} from './emotion/createEmotionCache'
+import { clientEmotionCache } from './emotion/createEmotionCache'
 
 const config = defineConfig({
   theme: {},
@@ -53,22 +49,30 @@ const config = defineConfig({
 
 const system = createSystem(defaultConfig, config)
 
-const emotionCache = clientEmotionCache ?? createEmotionCache()
+/**
+ * На SSR CacheProvider уже есть в entry-server (тот же кеш, из которого
+ * extractCritical забирает стили). Вложенный второй кеш ломал CSS кнопок/инпутов.
+ * На клиенте нужен свой singleton для гидратации.
+ */
+const withEmotionCache = (node: ReactNode) =>
+  clientEmotionCache ? (
+    <CacheProvider value={clientEmotionCache}>{node}</CacheProvider>
+  ) : (
+    <>{node}</>
+  )
 
 const RootLayout = () => {
   const location = useLocation()
 
-  return (
-    <CacheProvider value={emotionCache}>
-      <ChakraProvider value={system}>
-        {/* key сбрасывает boundary после перехода на /500 или другую страницу */}
-        <ErrorBoundary key={location.pathname}>
-          <GlobalStyles />
-          <Outlet />
-          <Toaster />
-        </ErrorBoundary>
-      </ChakraProvider>
-    </CacheProvider>
+  return withEmotionCache(
+    <ChakraProvider value={system}>
+      {/* key сбрасывает boundary после перехода на /500 или другую страницу */}
+      <ErrorBoundary key={location.pathname}>
+        <GlobalStyles />
+        <Outlet />
+        <Toaster />
+      </ErrorBoundary>
+    </ChakraProvider>
   )
 }
 
@@ -156,12 +160,10 @@ export const routes = [
   {
     path: '/',
     element: <RootLayout />,
-    errorElement: (
-      <CacheProvider value={emotionCache}>
-        <ChakraProvider value={system}>
-          <RouteError />
-        </ChakraProvider>
-      </CacheProvider>
+    errorElement: withEmotionCache(
+      <ChakraProvider value={system}>
+        <RouteError />
+      </ChakraProvider>
     ),
     children: [
       {
@@ -247,10 +249,6 @@ export const routes = [
       {
         path: '/500',
         Component: InternalServerErrorPage,
-      },
-      {
-        path: '/game-over',
-        Component: GameOverPage,
       },
       {
         path: '/callback/oauth/yandex',
