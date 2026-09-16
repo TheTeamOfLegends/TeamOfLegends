@@ -1,3 +1,6 @@
+import type { Theme } from '../theme/ThemeContext'
+import type { RefObject } from 'react'
+
 export type GameOverPayload = {
   score: number
   highScore: number
@@ -16,6 +19,7 @@ export type StartGameOptions = {
   onGameOver?: (payload: GameOverPayload) => void
   onHudUpdate?: (hud: GameHudState) => void
   onPauseChange?: (paused: boolean) => void
+  theme: RefObject<Theme>
 }
 
 export type GameController = {

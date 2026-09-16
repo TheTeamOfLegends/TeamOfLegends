@@ -3,9 +3,10 @@ import cors from 'cors'
 import path from 'path'
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') })
+// В Docker-образе .env нет: креды приходят только из environment / env_file
 
 import express from 'express'
-import { createClientAndConnect } from './db'
+import { createClientAndConnect, sequelize } from './db'
 import forumRouter from './src/routes/forumRouter'
 import authMiddleware from './src/middleware/authMiddleware'
 
@@ -31,6 +32,16 @@ app.get('/user', (_, res) => {
 
 app.get('/', (_, res) => {
   res.json('👋 Howdy from the server :)')
+})
+
+/** Liveness/readiness для Docker healthcheck */
+app.get('/health', async (_req, res) => {
+  try {
+    await sequelize.query('SELECT 1')
+    res.status(200).json({ status: 'ok' })
+  } catch {
+    res.status(503).json({ status: 'db_unavailable' })
+  }
 })
 
 app.use('/forum', authMiddleware, forumRouter)

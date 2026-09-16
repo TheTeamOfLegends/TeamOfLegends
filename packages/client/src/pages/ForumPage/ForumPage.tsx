@@ -13,6 +13,8 @@ import {
 } from '@chakra-ui/react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { StarPagination } from '../../components/StarPagination/StarPagination'
+import { useContext } from 'react'
+import { ThemeContext } from '../../theme/ThemeContext'
 
 type datePlain = string | undefined | null
 
@@ -42,6 +44,9 @@ const dateFormatterSpecial = (datePlain: datePlain) => {
 export const ForumPage = () => {
   usePage({ initPage: initForumPage })
 
+  const { theme } = useContext(ThemeContext)
+  const isLight = theme === 'light'
+
   const topics = useForumStore(s => s.topics) ?? []
   const isLoading = useForumStore(s => s.isLoading)
   const navigate = useNavigate()
@@ -65,7 +70,13 @@ export const ForumPage = () => {
       </Helmet>
       <Flex flexDirection={'column'} height="100vh">
         <Header />
-        <Container p={'10'} bg={'gray.50'} flexGrow={1}>
+        <Container
+          p={'10'}
+          m={0}
+          maxW="none"
+          flexGrow={1}
+          bg={isLight ? 'white' : '#080B2C'}
+          color={isLight ? 'black' : 'white'}>
           <Flex justifyContent={'space-between'}>
             <Heading mb={'2'}>Темы форума</Heading>
             {!isLoading && (
@@ -83,7 +94,7 @@ export const ForumPage = () => {
                 <Box key={topic.id}>
                   <ChackraLink
                     asChild
-                    color="blue.800"
+                    color="blue.600"
                     fontWeight="semibold"
                     _hover={{
                       color: 'blue.700',

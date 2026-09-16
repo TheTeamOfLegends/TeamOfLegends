@@ -68,29 +68,44 @@ swSelf.addEventListener('activate', event => {
 })
 
 // перехватываем все fetch запросы
-// у нас будут два сценария:
-// 1. статика и навигация всегда отдаются через кеш
-// 2. данамические данные (содержимое лидерборда, топиков форума) - делаем запрос в сеть,
-//    при ошибке выдаем из кеша
+// 1. навигация — network-first (SSR HTML со стилями Emotion); shell index.html только offline
+// 2. статика (js/css/…) — cache-first
+// 3. API/динамика — сеть, при ошибке кеш
 swSelf.addEventListener('fetch', event => {
-  // запрашивалась статика или нет
   const isRequestAboutStaticData =
     /\.(js|css|png|svg|woff|ico|webmanifest)[^.]*$/.test(event.request.url)
-  // навигационный запрос (через адресную панель браузера) или нет
   const isNavigate = event.request.mode === 'navigate'
-  // точно нет инета (например авиарежим)
   const isOffLine = swSelf.navigator.onLine === false
 
-  // Блок обработки запросов статики
-  if (isRequestAboutStaticData || isNavigate) {
+  // HTML от Express SSR нельзя отдавать из кеша online:
+  // в precache лежит сырой dist/client/index.html без <!--ssr-styles-->.
+  if (isNavigate) {
     event.respondWith(
       (async () => {
-        // выставляем ключ по которому будет идти поиск в кеше
-        // для любых страниц навигации - это всегда index.html (у нас spa)
-        const cacheKey = isNavigate ? INDEX_ROUTE_KEY : event.request
+        if (!isOffLine) {
+          try {
+            const response = await fetch(event.request)
+            if (!badResponse(response)) {
+              return response
+            }
+          } catch {
+            // сеть недоступна — ниже offline-fallback
+          }
+        }
 
-        // если есть кеш, вернем его сразу
-        const cacheResponse = await caches.match(cacheKey)
+        const cacheResponse = await caches.match(INDEX_ROUTE_KEY)
+        return cacheResponse || serviceUnavailable()
+      })()
+    )
+
+    return
+  }
+
+  // Статика с хешами в имени — cache-first
+  if (isRequestAboutStaticData) {
+    event.respondWith(
+      (async () => {
+        const cacheResponse = await caches.match(event.request)
         if (cacheResponse) {
           return cacheResponse
         }
@@ -99,16 +114,14 @@ swSelf.addEventListener('fetch', event => {
           return serviceUnavailable()
         }
 
-        // данных нет в кеше, делаем честный запрос на сервер
         const response = await fetch(event.request)
 
-        // Если сервер ответил ошибкой, не кэшируем её, а просто отдаем
         if (badResponse(response)) {
           return response
         }
 
         const cache = await caches.open(CACHE_NAME_STATIC)
-        await cache.put(cacheKey, response.clone())
+        await cache.put(event.request, response.clone())
 
         return response
       })()

@@ -12,8 +12,4 @@ export const pageContentStyles = {
   px: 4,
   py: 8,
   pb: 10,
-  backgroundImage: "url('/hero-bg.png')",
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
 } as const

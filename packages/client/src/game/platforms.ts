@@ -1,5 +1,6 @@
 import { PLATFORM_STYLES } from './constants'
 import type { Platform, Player } from './types'
+import type { Theme } from '../theme/ThemeContext'
 
 export const generatePlatforms = (
   ctx: CanvasRenderingContext2D,
@@ -145,7 +146,8 @@ export const updatePlatforms = (platforms: Platform[]): void => {
 
 export const drawPlatforms = (
   ctx: CanvasRenderingContext2D,
-  platforms: Platform[]
+  platforms: Platform[],
+  theme: Theme
 ): void => {
   platforms.forEach(platform => {
     ctx.fillStyle = platform.gradient
@@ -160,30 +162,29 @@ export const drawPlatforms = (
       platform.width / 2 + 10
     )
 
-    const glowColor =
-      platform.design === 'metal'
-        ? 'rgba(0, 212, 255, 0.2)'
-        : platform.design === 'ancient'
-        ? 'rgba(255, 0, 128, 0.2)'
-        : 'rgba(0, 255, 136, 0.2)'
+    // const glowColor =
+    //   platform.design === 'metal'
+    //     ? 'rgba(0, 212, 255, 0.2)'
+    //     : platform.design === 'ancient'
+    //     ? 'rgba(255, 0, 128, 0.2)'
+    //     : 'rgba(0, 255, 136, 0.2)'
+    let glowColor = 'rgba(0, 212, 255, 0.2)'
+    let outlineColor = 'rgba(0, 212, 255, 0.8)'
+    if (theme === 'light') {
+      glowColor = 'rgba(7, 73, 86, 0.5)'
+      outlineColor = 'rgba(16, 11, 42, 0.8)'
+      glowGradient.addColorStop(0, glowColor)
+      glowGradient.addColorStop(1, 'rgba(50, 50, 100, 0.5)')
+      ctx.fillStyle = glowGradient
+    } else if (theme === 'dark') {
+      glowColor = 'rgba(0, 212, 255, 0.2)'
+      outlineColor = 'rgba(0, 212, 255, 0.8)'
+      glowGradient.addColorStop(0, glowColor)
+      glowGradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
+      ctx.fillStyle = glowGradient
+    }
 
-    glowGradient.addColorStop(0, glowColor)
-    glowGradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
-
-    ctx.fillStyle = glowGradient
-    ctx.fillRect(
-      platform.x - platform.width / 2 - 10,
-      platform.y,
-      platform.width * 2,
-      platform.height
-    )
-
-    const outlineColor =
-      platform.design === 'metal'
-        ? 'rgba(0, 212, 255, 0.8)'
-        : platform.design === 'ancient'
-        ? 'rgba(255, 0, 128, 0.8)'
-        : 'rgba(0, 255, 136, 0.8)'
+    ctx.fillRect(platform.x, platform.y, platform.width, platform.height)
 
     ctx.strokeStyle = outlineColor
     ctx.lineWidth = 1
