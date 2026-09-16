@@ -1,6 +1,7 @@
 import { Button, HStack, SimpleGrid, VStack } from '@chakra-ui/react'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { Reaction } from '../../types/reaction'
+import { ThemeContext } from '../../theme/ThemeContext'
 
 interface ReactionBarProps {
   reactions?: Reaction[]
@@ -25,6 +26,9 @@ export const ReactionBar = ({
   onReactionClick,
 }: ReactionBarProps) => {
   const [isPickerOpen, setIsPickerOpen] = useState(false)
+
+  const { theme } = useContext(ThemeContext)
+  const isLight = theme === 'light'
 
   const myReaction = reactions.find(reaction => reaction.reactedByMe)
 
@@ -55,7 +59,7 @@ export const ReactionBar = ({
             height={buttonSize}
             borderRadius={6}
             borderColor="#EB4B76"
-            color="#000000"
+            color={isLight ? 'black' : 'white'}
             _hover={{
               backgroundColor: reactionColor,
             }}
@@ -79,7 +83,7 @@ export const ReactionBar = ({
           height={buttonSize}
           borderRadius={6}
           borderColor="#EB4B76"
-          color="#000000"
+          color={isLight ? 'black' : 'white'}
           display="flex"
           alignItems="center"
           justifyContent="center"
@@ -101,7 +105,7 @@ export const ReactionBar = ({
           right="0"
           padding={2}
           gap={1}
-          bg={'gray.100'}
+          bg={isLight ? 'gray.100' : '#080B2C'}
           border="1px solid"
           borderColor="#EB4B76"
           borderRadius={6}
