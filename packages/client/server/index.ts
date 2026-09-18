@@ -1,5 +1,4 @@
 import dotenv from 'dotenv'
-dotenv.config()
 
 import express, { Request as ExpressRequest } from 'express'
 import path from 'path'
@@ -8,6 +7,10 @@ import fs from 'fs/promises'
 import { createServer as createViteServer, ViteDevServer } from 'vite'
 import serialize from 'serialize-javascript'
 import cookieParser from 'cookie-parser'
+
+dotenv.config({
+  path: path.resolve(__dirname, '../../../.env'),
+})
 
 type HelmetRenderable = {
   meta: { toString(): string }
@@ -23,6 +26,26 @@ async function createServer() {
   const app = express()
 
   app.use(cookieParser())
+
+  app.use((_req, res, next) => {
+    res.setHeader(
+      'Content-Security-Policy',
+      [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline'",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: https:",
+        "font-src 'self' data:",
+        `connect-src ${process.env.CSP_CONNECT_SRC?.split(',').join(' ')}`,
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+      ].join('; ')
+    )
+
+    next()
+  })
+
   let vite: ViteDevServer | undefined
   if (isDev) {
     vite = await createViteServer({
