@@ -16,6 +16,7 @@ import { useForumTopicStore } from '../../stores/forumTopicStore'
 import { useProfileStore } from '../../stores/profileStore'
 import { useContext } from 'react'
 import { ThemeContext } from '../../theme/ThemeContext'
+import { ReactionBar } from '@/components/ReactionBar/ReactionBar'
 
 interface ContainerProps {
   title: string
@@ -67,6 +68,8 @@ export const ForumTopicPage = () => {
   const isLoading = useForumTopicStore(s => s.isLoading)
   const profileUser = useProfileStore(s => s.user)
 
+  const setTopicReaction = useForumTopicStore(s => s.setTopicReaction)
+
   if (isLoading) {
     return (
       <ForumTopicContainer title="page is loading">
@@ -103,6 +106,10 @@ export const ForumTopicPage = () => {
         {pageNumber === 1 && (
           <ForumTopicCard author={topic.author}>
             <ForumTopicCardBody {...topic} />
+            <ReactionBar
+              reactions={topic.reactions}
+              onReactionClick={emoji => setTopicReaction(topic.id, emoji)}
+            />
           </ForumTopicCard>
         )}
         {itemsToShow.map(comment => (

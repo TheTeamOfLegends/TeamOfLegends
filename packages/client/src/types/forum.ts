@@ -1,3 +1,5 @@
+import { Reaction } from './reaction'
+
 export type ForumAuthor = {
   name: string
   secondName: string
@@ -12,4 +14,5 @@ export type ForumComment = {
 
 export type Topic = ForumComment & {
   title: string
+  reactions: Reaction[]
 }
