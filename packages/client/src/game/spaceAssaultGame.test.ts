@@ -1,4 +1,6 @@
 import { GameController, startGame } from './spaceAssaultGame'
+import type { Theme } from '../theme/ThemeContext'
+import type { RefObject } from 'react'
 
 const createMockCtx = () => ({
   createLinearGradient: jest.fn().mockReturnValue({
@@ -74,21 +76,27 @@ describe('Игровой движок игры Space Assault', () => {
 
   describe('Жизненный цикл игры', () => {
     it('должна устанавливать позицию игрока в центр canvas на start', () => {
-      gameControl = startGame(canvas)
+      gameControl = startGame(canvas, {
+        theme: { current: 'dark' } as RefObject<Theme>,
+      })
 
       expect(canvas.width / 2).toBe(960)
       expect(canvas.height / 2).toBe(500)
     })
 
     it('должна останавливать игровой цикл при вызове stop()', () => {
-      gameControl = startGame(canvas)
-      gameControl.stop()
+      ;(gameControl = startGame(canvas, {
+        theme: { current: 'dark' } as RefObject<Theme>,
+      })),
+        gameControl.stop()
 
       expect(window.removeEventListener).toHaveBeenCalled()
     })
 
     it('должна перезапускать игру при вызове restart()', () => {
-      gameControl = startGame(canvas)
+      gameControl = startGame(canvas, {
+        theme: { current: 'dark' } as RefObject<Theme>,
+      })
       gameControl.restart()
 
       expect(gameControl).toBeDefined()
@@ -96,7 +104,9 @@ describe('Игровой движок игры Space Assault', () => {
 
     it('не должна кидать ошибки при перезапусках', () => {
       for (let i = 0; i < 5; i++) {
-        const game = startGame(canvas)
+        const game = startGame(canvas, {
+          theme: { current: 'dark' } as RefObject<Theme>,
+        })
         game.restart()
         game.stop()
       }
@@ -107,7 +117,9 @@ describe('Игровой движок игры Space Assault', () => {
     it('должна отменять animation frame при паузе', () => {
       const cancelAnimationFrameSpy = jest.spyOn(window, 'cancelAnimationFrame')
 
-      gameControl = startGame(canvas)
+      gameControl = startGame(canvas, {
+        theme: { current: 'dark' } as RefObject<Theme>,
+      })
       gameControl.stop()
 
       expect(cancelAnimationFrameSpy).toHaveBeenCalled()
@@ -121,7 +133,7 @@ describe('Игровой движок игры Space Assault', () => {
       const mockAudioContext = jest.fn()
       global.window.AudioContext = mockAudioContext
 
-      startGame(canvas)
+      startGame(canvas, { theme: { current: 'dark' } as RefObject<Theme> })
 
       expect(mockAudioContext).toHaveBeenCalled()
 
@@ -129,7 +141,7 @@ describe('Игровой движок игры Space Assault', () => {
     })
 
     it('должна настраивать localStorage для счета high score', () => {
-      startGame(canvas)
+      startGame(canvas, { theme: { current: 'dark' } as RefObject<Theme> })
 
       expect(localStorageMock.getItem).toHaveBeenCalledWith('highScore')
     })
@@ -139,6 +151,7 @@ describe('Игровой движок игры Space Assault', () => {
     it('должна инициализировать canvas', () => {
       gameControl = startGame(canvas, {
         onGameOver: jest.fn(),
+        theme: { current: 'dark' } as RefObject<Theme>,
       })
 
       expect(canvas.getContext).toHaveBeenCalledWith('2d')
@@ -152,13 +165,17 @@ describe('Игровой движок игры Space Assault', () => {
         getContext: jest.fn().mockReturnValue(null),
       }
 
-      const control = startGame(brokenCanvas as HTMLCanvasElement)
+      const control = startGame(brokenCanvas as HTMLCanvasElement, {
+        theme: { current: 'dark' } as RefObject<Theme>,
+      })
       expect(control.stop).toBeDefined()
       expect(control.restart).toBeDefined()
     })
 
     it('должна инициализировать размеры canvas на основе размера окна', () => {
-      gameControl = startGame(canvas)
+      gameControl = startGame(canvas, {
+        theme: { current: 'dark' } as RefObject<Theme>,
+      })
 
       expect(canvas.width).toBe(1920)
       expect(canvas.height).toBe(1000)
@@ -171,7 +188,9 @@ describe('Игровой движок игры Space Assault', () => {
       })
 
       const wideCanvas = createMockCanvas(2560, 1440) as HTMLCanvasElement
-      gameControl = startGame(wideCanvas)
+      gameControl = startGame(wideCanvas, {
+        theme: { current: 'dark' } as RefObject<Theme>,
+      })
 
       expect(wideCanvas.width).toBe(1920)
 
@@ -186,7 +205,9 @@ describe('Игровой движок игры Space Assault', () => {
       })
 
       const tallCanvas = createMockCanvas(1920, 2000) as HTMLCanvasElement
-      gameControl = startGame(tallCanvas)
+      gameControl = startGame(tallCanvas, {
+        theme: { current: 'dark' } as RefObject<Theme>,
+      })
 
       expect(tallCanvas.height).toBe(1080)
 
@@ -201,7 +222,9 @@ describe('Игровой движок игры Space Assault', () => {
       })
 
       const smallCanvas = createMockCanvas(800, 40) as HTMLCanvasElement
-      gameControl = startGame(smallCanvas)
+      gameControl = startGame(smallCanvas, {
+        theme: { current: 'dark' } as RefObject<Theme>,
+      })
 
       expect(smallCanvas.height).toBe(120)
 
@@ -222,7 +245,9 @@ describe('Игровой движок игры Space Assault', () => {
         height: 540,
       })
 
-      gameControl = startGame(testCanvas)
+      gameControl = startGame(testCanvas, {
+        theme: { current: 'dark' } as RefObject<Theme>,
+      })
 
       expect(testCanvas.width / testCanvas.getBoundingClientRect().width).toBe(
         2
@@ -232,7 +257,9 @@ describe('Игровой движок игры Space Assault', () => {
 
   describe('Настройки игры по умолчанию', () => {
     it('должна иметь размер canvas по умолчанию', () => {
-      gameControl = startGame(canvas)
+      gameControl = startGame(canvas, {
+        theme: { current: 'dark' } as RefObject<Theme>,
+      })
 
       expect(canvas.width).toBeLessThanOrEqual(1920)
       expect(canvas.height).toBeLessThanOrEqual(1080)
@@ -244,7 +271,9 @@ describe('Игровой движок игры Space Assault', () => {
       })
 
       const tinyCanvas = createMockCanvas(800, 200) as HTMLCanvasElement
-      gameControl = startGame(tinyCanvas)
+      gameControl = startGame(tinyCanvas, {
+        theme: { current: 'dark' } as RefObject<Theme>,
+      })
 
       expect(tinyCanvas.height).toBe(300)
 

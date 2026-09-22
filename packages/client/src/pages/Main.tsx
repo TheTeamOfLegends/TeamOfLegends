@@ -1,11 +1,14 @@
 import { Helmet } from 'react-helmet-async'
-
+import { useContext } from 'react'
+import { ThemeContext } from '../theme/ThemeContext'
 import { Header } from '../components/Header/Header'
 import { Box, Flex } from '@chakra-ui/react'
 import { Hero } from '../components/Hero/Hero'
 import { Navigation } from '../components/Navigation/Navigation'
 
 export const MainPage = () => {
+  const { theme } = useContext(ThemeContext)
+  const isLight = theme === 'light'
   return (
     <div>
       <Helmet>
@@ -22,7 +25,9 @@ export const MainPage = () => {
           direction="column"
           flex={1}
           pb={10}
-          backgroundImage="url('/hero-bg.png')"
+          backgroundImage={
+            isLight ? "url('/hero-bg-l.png')" : "url('/hero-bg.png')"
+          }
           backgroundSize="cover"
           backgroundPosition="center"
           backgroundRepeat="no-repeat">

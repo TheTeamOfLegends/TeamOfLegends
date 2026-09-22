@@ -5,6 +5,7 @@ import { Topic } from '../types/forum'
 
 interface ForumState {
   topics: Topic[] | null
+
   isLoading: boolean
   loadForum: (force?: boolean) => Promise<void>
   resetForum: () => void

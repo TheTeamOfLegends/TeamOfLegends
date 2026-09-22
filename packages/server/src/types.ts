@@ -1,3 +1,5 @@
+import 'express'
+
 export type ForumRelatedId = number | null
 
 export type ForumUser = {
@@ -30,4 +32,23 @@ export type DbComment = Omit<ForumComment, 'id' | 'topicId' | 'parentId'> & {
   id: number
   topic_id: number
   parent_id: ForumRelatedId
+}
+
+export type ForumReaction = {
+  id?: number
+  emoji: string
+  userId: number
+  topicId: number
+}
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface Request {
+      user: {
+        id: number
+        login?: string
+      }
+    }
+  }
 }

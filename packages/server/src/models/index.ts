@@ -1,6 +1,7 @@
 import { Comment } from './Comments'
 import { Topic } from './Topics'
 import { User } from './Users'
+import { Reaction } from './Reactions'
 
 Comment.belongsTo(Topic, {
   foreignKey: 'topicId',
@@ -25,4 +26,9 @@ User.hasMany(Topic, { foreignKey: 'author' })
 
 User.hasMany(Comment, { foreignKey: 'author' })
 
-export { User, Topic, Comment }
+Topic.hasMany(Reaction, { foreignKey: 'topicId' })
+User.hasMany(Reaction, { foreignKey: 'userId' })
+Reaction.belongsTo(Topic, { foreignKey: 'topicId' })
+Reaction.belongsTo(User, { foreignKey: 'userId' })
+
+export { User, Topic, Comment, Reaction }

@@ -32,6 +32,7 @@ const mapTopic = (t: ApiTopic): Topic => ({
   body: t.body,
   author: authorFromId(t.author),
   createdAt: t.createdAt ?? null,
+  reactions: [],
 })
 
 const mapComment = (c: ApiComment): ForumComment => ({

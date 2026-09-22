@@ -1,4 +1,5 @@
 import type { Star } from './types'
+import type { Theme } from '../theme/ThemeContext'
 
 export type StarryNight = {
   stars: Star[]
@@ -37,20 +38,32 @@ export const drawBackground = (
   ctx: CanvasRenderingContext2D,
   starryNight: StarryNight,
   width: number,
-  height: number
+  height: number,
+  theme: Theme
 ): void => {
   starryNight.time += 0.01
 
   const gradient = ctx.createLinearGradient(0, 0, 0, height)
-  gradient.addColorStop(0, '#0a1a4d')
-  gradient.addColorStop(0.3, '#1a2d5e')
-  gradient.addColorStop(0.6, '#2d3e6f')
-  gradient.addColorStop(1, '#1a3a52')
+  if (theme === 'light') {
+    gradient.addColorStop(0, '#90a4ea')
+    gradient.addColorStop(0.3, '#3a79d1')
+    gradient.addColorStop(0.6, '#3065aa')
+    gradient.addColorStop(1, '#34528e')
+  } else {
+    gradient.addColorStop(0, '#0a1a4d')
+    gradient.addColorStop(0.3, '#1a2d5e')
+    gradient.addColorStop(0.6, '#2d3e6f')
+    gradient.addColorStop(1, '#1a3a52')
+  }
 
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, width, height)
 
-  ctx.fillStyle = 'rgba(10, 30, 60, 0.6)'
+  if (theme === 'dark') {
+    ctx.fillStyle = 'rgba(10, 30, 60, 0.6)'
+  } else {
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+  }
   ctx.beginPath()
   ctx.moveTo(0, height)
   for (let x = 0; x <= width; x += 20) {
