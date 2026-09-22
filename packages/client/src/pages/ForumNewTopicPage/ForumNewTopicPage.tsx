@@ -77,7 +77,7 @@ export const newTopicCreateAction = async ({ request }: ActionFunctionArgs) => {
 
   const topic = await createTopic({ title, body, userId })
   useForumStore.getState().resetForum()
-  await useForumTopicStore.getState().loadTopic(topic.id, true)
+  useForumTopicStore.getState().seedTopic(topic)
 
   return redirect(`/forum/topic/${topic.id}`)
 }

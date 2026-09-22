@@ -39,7 +39,7 @@ declare global {
 export const resetStoresForSsr = () => {
   useSsrStore.setState({ initializedPath: null })
   useFriendsStore.setState({ data: [], isLoading: false })
-  useForumStore.setState({ topics: null, isLoading: false })
+  useForumStore.setState({ topics: null, isLoading: true })
   useForumTopicStore.setState({
     topic: null,
     comments: [],

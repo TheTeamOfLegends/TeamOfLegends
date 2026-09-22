@@ -12,10 +12,10 @@ interface ForumState {
 
 export const useForumStore = create<ForumState>((set, get) => ({
   topics: null,
-  isLoading: false,
+  isLoading: true,
 
   resetForum() {
-    set({ topics: null, isLoading: false })
+    set({ topics: null, isLoading: true })
   },
 
   async loadForum(force = false) {
@@ -28,9 +28,8 @@ export const useForumStore = create<ForumState>((set, get) => ({
     try {
       const topics = await getTopics()
       set({ topics, isLoading: false })
-    } catch (e) {
-      set({ topics: [], isLoading: false })
-      throw e
+    } catch {
+      set({ topics: null, isLoading: false })
     }
   },
 }))

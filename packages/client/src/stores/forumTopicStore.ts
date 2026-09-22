@@ -8,6 +8,8 @@ interface ForumTopicState {
   comments: ForumComment[]
   isLoading: boolean
   loadTopic: (id: number, force?: boolean) => Promise<void>
+  seedTopic: (topic: Topic) => void
+  appendComment: (comment: ForumComment) => void
   resetTopic: () => void
 }
 
@@ -18,6 +20,14 @@ export const useForumTopicStore = create<ForumTopicState>((set, get) => ({
 
   resetTopic() {
     set({ topic: null, comments: [], isLoading: true })
+  },
+
+  seedTopic(topic) {
+    set({ topic, comments: [], isLoading: false })
+  },
+
+  appendComment(comment) {
+    set({ comments: [...get().comments, comment] })
   },
 
   async loadTopic(id, force = false) {
@@ -34,9 +44,8 @@ export const useForumTopicStore = create<ForumTopicState>((set, get) => ({
         getComments(id),
       ])
       set({ topic, comments, isLoading: false })
-    } catch (e) {
+    } catch {
       set({ topic: null, comments: [], isLoading: false })
-      throw e
     }
   },
 }))

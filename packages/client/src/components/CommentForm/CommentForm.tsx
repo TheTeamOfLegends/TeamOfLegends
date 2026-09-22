@@ -44,8 +44,8 @@ export const newCommentCreateAction = async ({
     return redirect(`/forum/topic/${params.topicId}`)
   }
 
-  await createComment({ topicId, body, userId })
-  await useForumTopicStore.getState().loadTopic(topicId, true)
+  const comment = await createComment({ topicId, body, userId })
+  useForumTopicStore.getState().appendComment(comment)
 
   return redirect(`/forum/topic/${topicId}`)
 }

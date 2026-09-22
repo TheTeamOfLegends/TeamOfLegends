@@ -42,7 +42,7 @@ const dateFormatterSpecial = (datePlain: datePlain) => {
 export const ForumPage = () => {
   usePage({ initPage: initForumPage })
 
-  const topics = useForumStore(s => s.topics) ?? []
+  const topics = useForumStore(s => s.topics)
   const isLoading = useForumStore(s => s.isLoading)
   const navigate = useNavigate()
 
@@ -50,11 +50,12 @@ export const ForumPage = () => {
   const pageNumber = Number(searchParams.get('page') ?? 1)
 
   const TOPICS_PER_PAGE = 8
+  const topicsList = topics ?? []
   const topicsSliceStart = TOPICS_PER_PAGE * (pageNumber - 1)
   const topicsToShow =
-    topics.length > topicsSliceStart
-      ? topics.slice(topicsSliceStart, topicsSliceStart + TOPICS_PER_PAGE)
-      : topics.slice(-TOPICS_PER_PAGE)
+    topicsList.length > topicsSliceStart
+      ? topicsList.slice(topicsSliceStart, topicsSliceStart + TOPICS_PER_PAGE)
+      : topicsList.slice(-TOPICS_PER_PAGE)
 
   return (
     <div className="App">
@@ -77,7 +78,10 @@ export const ForumPage = () => {
             )}
           </Flex>
           {isLoading && <Text>Загрузка...</Text>}
-          {!isLoading && (
+          {!isLoading && topics === null && (
+            <Text>Не удалось загрузить форум</Text>
+          )}
+          {!isLoading && topics !== null && (
             <Flex flexDirection={'column'} gap={'2'}>
               {topicsToShow.map(topic => (
                 <Box key={topic.id}>
