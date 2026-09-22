@@ -22,29 +22,74 @@ const port = process.env.PORT || 80
 const clientPath = path.join(__dirname, '..')
 const isDev = process.env.NODE_ENV === 'development'
 
+/** Источники для connect-src / form-action (запятая или пробел). Кавычки из .env снимаем. */
+const parseCspSources = (
+  raw: string | undefined,
+  fallback: string[]
+): string[] => {
+  const parts = (raw ?? '')
+    .split(/[,\s]+/)
+    .map(s => s.replace(/^['"]|['"]$/g, '').trim())
+    .filter(Boolean)
+
+  const sources = parts.length > 0 ? parts : fallback
+  // 'self' всегда добавляем сами — в .env dotenv часто съедает кавычки
+  return Array.from(new Set(["'self'", ...sources.filter(s => s !== 'self')]))
+}
+
+const buildContentSecurityPolicy = (): string => {
+  const connectSrc = parseCspSources(process.env.CSP_CONNECT_SRC, [
+    'https://ya-praktikum.tech',
+    'https://oauth.yandex.ru',
+    'https://passport.yandex.ru',
+    'ws:',
+    'wss:',
+  ])
+
+  // Свой API (форум и т.д.), если задан публичный URL
+  const externalApi = process.env.EXTERNAL_SERVER_URL?.trim()
+  if (externalApi) {
+    try {
+      connectSrc.push(new URL(externalApi).origin)
+    } catch {
+      connectSrc.push(externalApi)
+    }
+  }
+
+  const formAction = parseCspSources(process.env.CSP_FORM_ACTION, [
+    'https://oauth.yandex.ru',
+    'https://passport.yandex.ru',
+    'https://ya-praktikum.tech',
+  ])
+
+  return [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https: blob:",
+    "font-src 'self' data:",
+    `connect-src ${connectSrc.join(' ')}`,
+    "object-src 'none'",
+    "base-uri 'self'",
+    `form-action ${formAction.join(' ')}`,
+    // Редирект на Яндекс OAuth — навигация верхнего уровня
+    "frame-ancestors 'self'",
+  ].join('; ')
+}
+
 async function createServer() {
   const app = express()
 
   app.use(cookieParser())
 
-  app.use((_req, res, next) => {
-    res.setHeader(
-      'Content-Security-Policy',
-      [
-        "default-src 'self'",
-        "script-src 'self' 'unsafe-inline'",
-        "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' data: https:",
-        "font-src 'self' data:",
-        `connect-src ${process.env.CSP_CONNECT_SRC?.split(',').join(' ')}`,
-        "object-src 'none'",
-        "base-uri 'self'",
-        "form-action 'self'",
-      ].join('; ')
-    )
-
-    next()
-  })
+  // Если CSP выставляет nginx (CSP_FROM_NGINX=1) — не дублируем заголовок
+  if (process.env.CSP_FROM_NGINX !== '1') {
+    const csp = buildContentSecurityPolicy()
+    app.use((_req, res, next) => {
+      res.setHeader('Content-Security-Policy', csp)
+      next()
+    })
+  }
 
   let vite: ViteDevServer | undefined
   if (isDev) {
