@@ -27,7 +27,7 @@ forumRouter.get('/topics', async (req, res) => {
     res.json(response)
   } catch (error) {
     console.log(error)
-    res.status(404).json('Не удалось найти данные')
+    res.status(500).json({ error: 'Не удалось получить топики форума' })
   }
 })
 
