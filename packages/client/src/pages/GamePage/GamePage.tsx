@@ -26,6 +26,8 @@ const INITIAL_HUD: GameHudState = {
   maxHp: 100,
   machineGunRemainingMs: 0,
   shotgunRemainingMs: 0,
+  fps: 0,
+  durationMs: 0,
 }
 
 const RETURN_NOTIFICATION_DELAY_MS = 60_000
@@ -213,6 +215,8 @@ export const GamePage = () => {
             score={gameOver.score}
             highScore={gameOver.highScore}
             isNewHighScore={gameOver.isNewHighScore}
+            durationMs={gameOver.durationMs}
+            avgFps={gameOver.avgFps}
             onRestart={handleRestart}
           />
         )}

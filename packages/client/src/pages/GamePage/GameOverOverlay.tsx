@@ -3,12 +3,15 @@ import { useProfileStore } from '@/stores/profileStore'
 import { Box, Flex, Heading, Stack, Text } from '@chakra-ui/react'
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { formatDuration } from '../../game/performanceStats'
 import { GameButton } from '../../components/ui/GameButton/GameButton'
 
 export type GameOverOverlayProps = {
   score: number
   highScore: number
   isNewHighScore: boolean
+  durationMs: number
+  avgFps: number
   onRestart: () => void
 }
 
@@ -16,6 +19,8 @@ export const GameOverOverlay = ({
   score,
   highScore,
   isNewHighScore,
+  durationMs,
+  avgFps,
   onRestart,
 }: GameOverOverlayProps) => {
   const user = useProfileStore(s => s.user)
@@ -84,6 +89,18 @@ export const GameOverOverlay = ({
             Лучший результат:{' '}
             <Box as="span" color="white" fontWeight="600">
               {highScore.toLocaleString('ru-RU')}
+            </Box>
+          </Text>
+          <Text color="whiteAlpha.800" fontSize={{ base: 'md', sm: 'lg' }}>
+            Время:{' '}
+            <Box as="span" fontWeight="700">
+              {formatDuration(durationMs, true)}
+            </Box>
+          </Text>
+          <Text color="whiteAlpha.800" fontSize={{ base: 'md', sm: 'lg' }}>
+            Avg FPS:{' '}
+            <Box as="span" fontWeight="700">
+              {avgFps}
             </Box>
           </Text>
         </Stack>
