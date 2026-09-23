@@ -1,11 +1,5 @@
-map $$http_upgrade $$connection_upgrade {
-    default upgrade;
-    ''      close;
-}
-
-# Reverse-proxy: :80 → SSR client; /own-api/ → backend
-# ${EXTERNAL_SERVER_ORIGIN} / ${SERVER_PORT} — из env контейнера (envsubst)
-# $$var — переменные nginx (экранирование для envsubst)
+# ${EXTERNAL_SERVER_ORIGIN} и ${SERVER_PORT} подставляет entrypoint nginx (envsubst).
+# Остальные $var — переменные nginx; при NGINX_ENVSUBST_FILTER их не трогают.
 
 upstream ssr_client {
     server client:80;
@@ -19,7 +13,6 @@ server {
     listen 80;
     server_name _;
 
-    # CSP: Praktikum API + Яндекс OAuth + свой backend origin
     add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' ${EXTERNAL_SERVER_ORIGIN} https://ya-praktikum.tech https://oauth.yandex.ru https://passport.yandex.ru ws: wss:; object-src 'none'; base-uri 'self'; form-action 'self' https://oauth.yandex.ru https://passport.yandex.ru https://ya-praktikum.tech; frame-ancestors 'self'" always;
 
     add_header X-Content-Type-Options "nosniff" always;
@@ -31,22 +24,22 @@ server {
     location /own-api/ {
         proxy_pass http://app_server/;
         proxy_http_version 1.1;
-        proxy_set_header Host $$host;
-        proxy_set_header X-Real-IP $$remote_addr;
-        proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $$scheme;
-        proxy_set_header Cookie $$http_cookie;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Cookie $http_cookie;
     }
 
     location / {
         proxy_pass http://ssr_client;
         proxy_http_version 1.1;
-        proxy_set_header Host $$host;
-        proxy_set_header X-Real-IP $$remote_addr;
-        proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $$scheme;
-        proxy_set_header Cookie $$http_cookie;
-        proxy_set_header Upgrade $$http_upgrade;
-        proxy_set_header Connection $$connection_upgrade;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Cookie $http_cookie;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
     }
 }
