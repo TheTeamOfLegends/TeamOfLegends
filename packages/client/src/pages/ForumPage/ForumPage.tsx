@@ -15,6 +15,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { StarPagination } from '../../components/StarPagination/StarPagination'
 import { useContext } from 'react'
 import { ThemeContext } from '../../theme/ThemeContext'
+import { decodeHtml } from '@/utils/html'
 
 type datePlain = string | undefined | null
 
@@ -104,7 +105,9 @@ export const ForumPage = () => {
                       color: 'blue.700',
                       textDecoration: 'underline',
                     }}>
-                    <Link to={`/forum/topic/${topic.id}`}>{topic.title}</Link>
+                    <Link to={`/forum/topic/${topic.id}`}>
+                      {decodeHtml(topic.title)}
+                    </Link>
                   </ChackraLink>
                   <Flex gapX={'2'} fontSize={'small'}>
                     <Text as={'span'}>

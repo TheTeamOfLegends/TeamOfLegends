@@ -3,6 +3,7 @@ import { dateFormatter } from '../../pages/ForumPage/ForumPage'
 import { ReactNode, useContext } from 'react'
 import { ForumAuthor, ForumComment, Topic } from '../../types/forum'
 import { ThemeContext } from '../../theme/ThemeContext'
+import { decodeHtml } from '@/utils/html'
 
 // Переделать на Avatar.Image когда его починяет
 const AvatarImage = Avatar.Image as React.FC<
@@ -50,9 +51,9 @@ export const ForumTopicCardBody = (props: ForumComment | Topic) => {
     <>
       <Box fontSize={'small'}>{dateFormatter(props.createdAt)}</Box>
       {'title' in props && props.title && (
-        <Box fontWeight={'semibold'}>{props.title}</Box>
+        <Box fontWeight={'semibold'}>{decodeHtml(props.title)}</Box>
       )}
-      <Box whiteSpace="pre-line">{props.body}</Box>
+      <Box whiteSpace="pre-line">{decodeHtml(props.body)}</Box>
     </>
   )
 }

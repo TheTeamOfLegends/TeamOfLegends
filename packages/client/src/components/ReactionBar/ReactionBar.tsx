@@ -2,6 +2,7 @@ import { Button, HStack, SimpleGrid, VStack } from '@chakra-ui/react'
 import { useContext, useState } from 'react'
 import { Reaction } from '../../types/reaction'
 import { ThemeContext } from '../../theme/ThemeContext'
+import { decodeHtml } from '@/utils/html'
 
 interface ReactionBarProps {
   reactions?: Reaction[]
@@ -51,29 +52,32 @@ export const ReactionBar = ({
       width="fit-content"
       minWidth={135}>
       <HStack>
-        {reactions.map(reaction => (
-          <Button
-            key={reaction.emoji}
-            size="xs"
-            paddingX={2}
-            height={buttonSize}
-            borderRadius={6}
-            borderColor="#EB4B76"
-            color={isLight ? 'black' : 'white'}
-            _hover={{
-              backgroundColor: reactionColor,
-            }}
-            transition="background-color 0.2s ease"
-            fontSize="16px"
-            backgroundColor={
-              reaction.reactedByMe
-                ? 'color-mix(in srgb, #EB4B76 20%, transparent)'
-                : 'transparent'
-            }
-            onClick={() => onReactionClick(reaction.emoji)}>
-            {reaction.emoji} {reaction.count}
-          </Button>
-        ))}
+        {reactions.map(reaction => {
+          const safeReactionEmoji = decodeHtml(reaction.emoji)
+          return (
+            <Button
+              key={safeReactionEmoji}
+              size="xs"
+              paddingX={2}
+              height={buttonSize}
+              borderRadius={6}
+              borderColor="#EB4B76"
+              color={isLight ? 'black' : 'white'}
+              _hover={{
+                backgroundColor: reactionColor,
+              }}
+              transition="background-color 0.2s ease"
+              fontSize="16px"
+              backgroundColor={
+                reaction.reactedByMe
+                  ? 'color-mix(in srgb, #EB4B76 20%, transparent)'
+                  : 'transparent'
+              }
+              onClick={() => onReactionClick(safeReactionEmoji)}>
+              {safeReactionEmoji} {reaction.count}
+            </Button>
+          )
+        })}
 
         <Button
           variant="outline"

@@ -1,10 +1,16 @@
 import { Field, Textarea, Button, Flex } from '@chakra-ui/react'
-import { ActionFunctionArgs, Form, redirect } from 'react-router-dom'
+import {
+  ActionFunctionArgs,
+  Form,
+  redirect,
+  useNavigation,
+} from 'react-router-dom'
 import { ForumTopicCard } from '../ForumTopicCard/ForumTopicCard'
 import { ForumAuthor } from '../../types/forum'
 import { createComment } from '../../api/forumApi'
 import { useForumTopicStore } from '../../stores/forumTopicStore'
 import { useProfileStore } from '../../stores/profileStore'
+import { useEffect, useState } from 'react'
 
 interface CommentFormProps {
   author: ForumAuthor
@@ -12,9 +18,22 @@ interface CommentFormProps {
 }
 
 export const CommentForm = (props: CommentFormProps) => {
+  const [formVersion, setFormVersion] = useState(0)
+  const navigation = useNavigation()
+
+  // управляет сбросом формы после отправки
+  useEffect(() => {
+    if (navigation.state === 'idle') {
+      setFormVersion(prev => prev + 1)
+    }
+  }, [navigation.state])
+
   return (
     <ForumTopicCard author={props.author}>
-      <Form method="post" action={`/forum/topic/${props.topicId}/comment/new`}>
+      <Form
+        key={formVersion}
+        method="post"
+        action={`/forum/topic/${props.topicId}/comment/new`}>
         <Flex flexDirection={'column'} gapY={8}>
           <Field.Root>
             <Textarea rows={10} name={'body'} />

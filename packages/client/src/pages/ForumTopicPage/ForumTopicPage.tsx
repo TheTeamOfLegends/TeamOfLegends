@@ -17,6 +17,7 @@ import { useProfileStore } from '../../stores/profileStore'
 import { useContext } from 'react'
 import { ThemeContext } from '../../theme/ThemeContext'
 import { ReactionBar } from '@/components/ReactionBar/ReactionBar'
+import { decodeHtml } from '@/utils/html'
 
 interface ContainerProps {
   title: string
@@ -30,17 +31,18 @@ const ForumTopicContainer = (props: ContainerProps) => {
   const { theme } = useContext(ThemeContext)
   const isLight = theme === 'light'
 
-  const title =
+  const title = decodeHtml(
     props.title.length > MAX_TITLE_LENGTH
       ? props.title.slice(0, MAX_TITLE_LENGTH) + '...'
       : props.title
+  )
 
   return (
     <div className="App">
       <Helmet>
         <meta charSet="utf-8" />
         <title>{title}</title>
-        <meta name="description" content={props.title} />
+        <meta name="description" content={decodeHtml(props.title)} />
       </Helmet>
       <Flex flexDirection={'column'} height="100vh">
         <Header />
