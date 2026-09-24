@@ -1,18 +1,45 @@
-name: Deploy to Yandex Cloud
+name: Lint
 
 on:
+  pull_request:
   push:
     branches:
+      - main
       - dev
   workflow_dispatch:
 
 concurrency:
-  group: deploy-dev
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  eslint:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install main deps
+        run: yarn
+      - name: Initialize
+        run: yarn lerna bootstrap
+      - name: Lint
+        run: yarn lint
+      - name: Test
+        run: yarn test
+
+  deploy:
+    name: Deploy to Yandex Cloud
+    needs: eslint
+    # после успешного eslint/test; на PR и на main — пропускаем
+    if: >
+      github.ref == 'refs/heads/dev' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-dev
+      cancel-in-progress: true
     steps:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.0
@@ -23,7 +50,6 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           envs: DEPLOY_PATH
-          # сборка Docker на ВМ может занять долго
           command_timeout: 30m
           script: |
             set -euo pipefail
@@ -37,7 +63,6 @@ jobs:
             git checkout dev
             git pull --ff-only origin dev
 
-            # .env на ВМ (DOMAIN_NAME, EXTERNAL_SERVER_URL, …) подхватывает compose/build-args
             docker compose up -d --build
 
             docker compose ps
