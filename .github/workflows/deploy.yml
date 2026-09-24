@@ -32,7 +32,6 @@ jobs:
   deploy:
     name: Deploy to Yandex Cloud
     needs: eslint
-    # после успешного eslint/test; на PR и на main — пропускаем
     if: >
       github.ref == 'refs/heads/dev' &&
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
@@ -50,7 +49,8 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           envs: DEPLOY_PATH
-          command_timeout: 30m
+          # первая сборка всё ещё долгая; повторные с кешем быстрее
+          command_timeout: 60m
           script: |
             set -euo pipefail
 
@@ -63,6 +63,12 @@ jobs:
             git checkout dev
             git pull --ff-only origin dev
 
-            docker compose up -d --build
+            export DOCKER_BUILDKIT=1
+            export COMPOSE_DOCKER_CLI_BUILD=1
+
+            # параллельная сборка client+server, up без лишнего rebuild
+            docker compose build --parallel
+            docker compose up -d
 
             docker compose ps
+            docker images --format '{{.Repository}}:{{.Tag}} {{.CreatedSince}}' | head -8

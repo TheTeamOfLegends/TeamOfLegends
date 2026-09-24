@@ -1,28 +1,32 @@
+# syntax=docker/dockerfile:1
+
 ARG NODE_VERSION=20
 ARG CLIENT_PORT=3001
-ARG EXTERNAL_SERVER_URL
-ARG INTERNAL_SERVER_URL
 
-FROM node:$NODE_VERSION-bookworm AS base
-
+FROM node:${NODE_VERSION}-bookworm AS base
 WORKDIR /app
 
 FROM base AS builder
 
+# Сначала только манифесты — слой yarn кешируется между деплоями
+COPY package.json yarn.lock lerna.json ./
+COPY packages/client/package.json ./packages/client/
+COPY packages/server/package.json ./packages/server/
+
+RUN --mount=type=cache,target=/usr/local/share/.cache/yarn \
+    yarn install --frozen-lockfile --network-timeout 600000
+
+COPY . .
+
+# URL нужны только на этапе vite build — не сбрасывают кеш yarn
 ARG EXTERNAL_SERVER_URL
 ARG INTERNAL_SERVER_URL
 ENV EXTERNAL_SERVER_URL=$EXTERNAL_SERVER_URL \
     INTERNAL_SERVER_URL=$INTERNAL_SERVER_URL
 
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN yarn build --scope=client
 
-COPY . .
-
-RUN yarn lerna bootstrap
-RUN rm -rf /app/packages/client/dist/ && yarn build --scope=client
-
-FROM node:$NODE_VERSION-bookworm-slim AS production
+FROM node:${NODE_VERSION}-bookworm-slim AS production
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -31,7 +35,10 @@ COPY --from=builder /app/packages/client/dist/ /app/dist/
 COPY --from=builder /app/packages/client/server/ /app/server/
 COPY --from=builder /app/packages/client/package.json /app/package.json
 COPY --from=builder /app/yarn.lock /app/yarn.lock
-RUN yarn install --production=true
 
+RUN --mount=type=cache,target=/usr/local/share/.cache/yarn \
+    yarn install --production=true --network-timeout 600000
+
+ARG CLIENT_PORT=3001
 EXPOSE $CLIENT_PORT
 CMD [ "node", "/app/server/index.js" ]
