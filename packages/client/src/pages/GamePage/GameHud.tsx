@@ -1,5 +1,6 @@
 import { Box, Flex, Text } from '@chakra-ui/react'
 import { COMBAT } from '../../game/constants'
+import { formatDuration } from '../../game/performanceStats'
 import type { GameHudState } from '../../game/types'
 
 export type GameHudProps = {
@@ -95,6 +96,28 @@ export const GameHud = ({ hud }: GameHudProps) => {
           SCORE
         </Box>
       </Text>
+
+      <Flex
+        justify="space-between"
+        align="baseline"
+        mb={3}
+        gap={3}
+        fontFamily="Orbitron, sans-serif"
+        fontSize="11px"
+        letterSpacing="0.06em">
+        <Text color="#8eff56" whiteSpace="nowrap">
+          <Box as="span" color="whiteAlpha.600" mr={1.5}>
+            TIME
+          </Box>
+          {formatDuration(hud.durationMs, true)}
+        </Text>
+        <Text color="#fcff4f" whiteSpace="nowrap">
+          <Box as="span" color="whiteAlpha.600" mr={1.5}>
+            FPS
+          </Box>
+          {hud.fps}
+        </Text>
+      </Flex>
 
       <Box display="flex" flexDir="column" gap={3}>
         <HudBar label="HP" value={hud.hp} max={hud.maxHp} color="#8eff56" />

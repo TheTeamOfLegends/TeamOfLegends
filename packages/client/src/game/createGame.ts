@@ -33,6 +33,12 @@ import {
   drawPlayerGun,
   drawMouseLine,
 } from './render'
+import {
+  createFpsSampler,
+  getRoundDurationMs,
+  markRoundEnd,
+  markRoundStart,
+} from './performanceStats'
 import { getHighScore, saveHighScore } from './scoreStorage'
 import {
   checkTrampolineCollisions,
@@ -146,10 +152,14 @@ export function startGame(
   let enemySpawnTimer = 0
   let lastFrameTimeMs = 0
   let lastHudEmit = 0
+  const fpsSampler = createFpsSampler()
 
   /** Game clock that freezes while paused. */
   const nowGame = () =>
     Date.now() - totalPausedMs - (paused ? Date.now() - pauseStartedAt : 0)
+
+  const livePausedMs = () =>
+    totalPausedMs + (paused ? Date.now() - pauseStartedAt : 0)
 
   const emitHud = () => {
     const now = nowGame()
@@ -159,6 +169,8 @@ export function startGame(
       maxHp: player.maxHp,
       machineGunRemainingMs: Math.max(0, machineGunEndTime - now),
       shotgunRemainingMs: Math.max(0, shotgunEndTime - now),
+      fps: fpsSampler.getFps(),
+      durationMs: getRoundDurationMs(livePausedMs()),
     })
   }
 
@@ -178,16 +190,20 @@ export function startGame(
 
   const triggerGameOver = () => {
     gameOver = true
+    const pausedMs = livePausedMs()
     if (paused) {
       paused = false
       options.onPauseChange?.(false)
     }
     isNewHighScore = score > highScore
     highScore = saveHighScore(score)
+    const roundStats = markRoundEnd(pausedMs, fpsSampler.getAvgFps())
     options.onGameOver?.({
       score,
       highScore,
       isNewHighScore,
+      durationMs: roundStats.durationMs,
+      avgFps: roundStats.avgFps,
     })
   }
 
@@ -218,6 +234,8 @@ export function startGame(
     difficulty.enemySpawnRateMultiplier = 1
     gameTrampolines = generateTrampolines(canvas.width, canvas.height)
     platforms = generatePlatforms(ctx, canvas.width, canvas.height)
+    fpsSampler.reset()
+    markRoundStart()
     emitHud()
   }
 
@@ -371,9 +389,10 @@ export function startGame(
     }
 
     renderFrame()
+    fpsSampler.sample(performance.now())
 
     const hudNow = performance.now()
-    if (hudNow - lastHudEmit > 100) {
+    if (hudNow - lastHudEmit > 50) {
       lastHudEmit = hudNow
       emitHud()
     }
@@ -453,6 +472,7 @@ export function startGame(
   platforms = generatePlatforms(ctx, canvas.width, canvas.height)
   difficulty.startTime = nowGame()
   enemySpawnTimer = nowGame()
+  markRoundStart()
   rafId = requestAnimationFrame(update)
   emitHud()
 

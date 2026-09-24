@@ -5,6 +5,8 @@ export type GameOverPayload = {
   score: number
   highScore: number
   isNewHighScore: boolean
+  durationMs: number
+  avgFps: number
 }
 
 export type GameHudState = {
@@ -13,6 +15,8 @@ export type GameHudState = {
   maxHp: number
   machineGunRemainingMs: number
   shotgunRemainingMs: number
+  fps: number
+  durationMs: number
 }
 
 export type StartGameOptions = {
