@@ -1,0 +1,43 @@
+name: Deploy to Yandex Cloud
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          envs: DEPLOY_PATH
+          # сборка Docker на ВМ может занять долго
+          command_timeout: 30m
+          script: |
+            set -euo pipefail
+
+            APP_DIR="${DEPLOY_PATH:-$HOME/TeamOfLegends}"
+            cd "$APP_DIR"
+
+            echo "Deploying $(git rev-parse --short HEAD) → $(pwd)"
+
+            git fetch origin dev
+            git checkout dev
+            git pull --ff-only origin dev
+
+            # .env на ВМ (DOMAIN_NAME, EXTERNAL_SERVER_URL, …) подхватывает compose/build-args
+            docker compose up -d --build
+
+            docker compose ps
